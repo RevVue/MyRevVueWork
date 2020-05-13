@@ -1,0 +1,111 @@
+<!--
+Description     :   This page is for Mass rollup calculate for all the opportunities.
+
+Created By      :	Bill Feeheley	
+
+Created Date    :	12/12/2019 
+
+-->
+<apex:page controller="RevRecRollupCalculateController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false">
+    
+    <!-- Apex form -->
+    <apex:form id="form">  
+        <div style="background-color:#b0ef96;">
+            <apex:pageBlock mode="maindetail" rendered="{!NoRecordsFound}">
+                <apex:outputText value="{!$Label.appropozsln__no_record_found_label}" style="margin-left:10px;font-weight:bold;font-size:18px;"/>
+            </apex:pageBlock> 
+        </div>
+        
+        <div style="background-color:#ed2121;">
+            <apex:pageBlock mode="maindetail" rendered="{!isHavingPermission}">
+                <apex:outputText value="{!$Label.appropozsln__authorizationerror}" style="margin-left:10px;font-weight:bold;font-size:18px;"/>
+            </apex:pageBlock> 
+        </div>
+        
+        <div style="background-color:#b0ef96;">
+            <apex:pageBlock mode="maindetail" rendered="{!isError}">
+                <apex:image value="{!$Resource.Information}" width="20" height="20" />
+                <apex:outputText value="{!$Label.appropozsln__batch_starts_label}" style="margin-left:10px;font-weight:bold;font-size:18px;"/>
+            </apex:pageBlock> 
+        </div>
+        
+        <!-- Action Status -->
+        <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+        
+        <!-- Page Block section -->
+        <apex:pageBlock title="Mass Rollup Calculate" id="pbs3">
+            <apex:pageBlockSection title="This will calculate all annual and monthly summary amounts for each opportunity. The rollup values are visible on each opportunity under the REVvue section header by selecting the 'Rollup' item or icon. The rollup values are also available for each account and via Salesforce reports and dashboards. The current user will be notified when the process completes " collapsible="false">
+            </apex:pageBlockSection>
+            
+            <!-- Page Block section -->
+            <apex:pageBlockSection columns="2" title="Search" collapsible="false" id="pbs">
+                
+                <!-- Opportunity stage -->
+                <apex:inputField value="{!opportunity.StageName}" required="false"/>
+                
+                <!-- Opp type -->
+                <apex:inputField value="{!opportunity.Type}" required="false"/>
+                
+                <!-- Amount -->  
+                <apex:pageBlockSectionItem >
+                    Amount From:
+                    <apex:inputField value="{!opportunity.Amount}" required="false"/>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    Amount To:
+                    <apex:inputField value="{!opportunity1.Amount}" required="false"/> 
+                </apex:pageBlockSectionItem> 
+                
+                
+                <apex:pageBlockSectionItem >
+                	Date Field :
+                	<apex:selectList multiselect="false" size="1" value="{!selectedCriteriaField}">
+                		<apex:selectOptions value="{!SearchDateOptions}"/>
+                	</apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                	Range : 
+	                <apex:selectList value="{!selectedCriteria}" multiselect="false" size="1" label="Select Criteria">
+	                	<apex:actionSupport event="onchange" action="{!changeCriteria}" reRender="pbs3" status="waitMsg"/>
+						<apex:selectOptions value="{!FilterCriteria}"/> 
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+				
+				<apex:pageBlockSectionItem rendered="{!selectedCriteria = 'Custom'}">
+                	From :
+                	<apex:inputField value="{!opportunity.REVvue_CreatedDate__c}" required="false" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!selectedCriteria = 'Custom'}">
+                	To :  
+                	<apex:inputField value="{!opportunity1.REVvue_CreatedDate__c}" required="false" />
+                </apex:pageBlockSectionItem>      
+				
+            </apex:pageBlockSection>
+            
+            <!-- Page Block section -->
+            <apex:pageBlockSection columns="2" title="Single Oppty Search" collapsible="false" id="pbs2">
+                
+                <!-- Opportunity stage -->
+                <apex:inputField value="{!opportunity.Name}" required="false"/>
+                
+                <!-- Opp type -->
+                <apex:inputField value="{!opportunity.AccountId}" required="false"/>
+            </apex:pageBlockSection>
+  			
+            <!-- Buttons -->
+            <!--<apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.appropozsln__executebatchactionlabel}" action="{!searchOppRecordsWithMatchingCreteria}" reRender="form" status="waitMsg"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>-->
+            
+            <!-- Buttons -->
+            <apex:pageBlockButtons location="bottom" >
+                <apex:commandButton value="{!$Label.appropozsln__executebatchactionlabel}" action="{!SetYearlyAndMonthlyRollupOnOpportunity}" reRender="form" status="waitMsg" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+    </apex:form>
+</apex:page>

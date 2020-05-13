@@ -1,0 +1,210 @@
+<apex:page controller="RuleToProductLineAssignmentController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false" action="{!inIt}">
+    
+     <style>
+        .msgIcon {
+            display: none!important
+        }
+        .customMessage * {
+            color: #fff!important
+        }
+        .customMessage {
+            margin: 5px 0!important;
+            max-width: 1280px;
+            opacity: 1!important;
+            width: 100%;
+            font-size: 12px;
+            border: 0px;
+            padding-left: 10px;
+        }
+        .message {
+            opacity: .1
+        }
+        </style>
+        
+    <!-- Form -->
+    <apex:form id="form">
+        
+        <div class="slds" id="pbls">
+            
+            <!-- Block UI component -->
+            <c:BlockUI />
+        
+            <!--Page Message  --> 
+            <apex:pageMessages />
+       
+            <!-- Action Status -->
+            <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+            
+            <apex:actionFunction name="saveRuleOnOli" action="{!blankMethod}" rerender="ooppppp,pB1" Status="waitMsg"> 
+                <apex:param value="" assignTo="{!oppLineItemRow}" name="ruleRow" />
+                <apex:param value="" assignTo="{!ruleId}" name="ruleId" />
+            </apex:actionFunction>
+         
+            <apex:outputPanel id="pb">
+                
+                <!-- Buttons -->
+                <div class="slds-grid slds-grid--align-center">
+                    <div class="slds-col">
+                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" action="{!doSave}" value="Save" reRender="form" status="waitMsg"/> 
+                    </div>
+                </div><br/>
+                
+                <!-- Page Block section -->
+                <apex:outputPanel id="pbs" > 
+                    <div class="slds-scrollable--x">
+                        <table class="slds-table slds-table--bordered slds-table--cell-buffer" id="tbl">
+                            <thead>
+                                <tr class="slds-text-title--caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product Family">Product Family</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Rule">Rule</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:variable value="{!0}" var="rowDef3"/>
+                                <apex:repeat value="{!productFamilyRules}" var="item" id="theRepeat">
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="slds-truncate"><apex:outputlabel value="{!item.Name}"/></div>
+                                        </th>
+                                        <th scope="col" style="width:250px">
+                                            <div class="slds-grid slds-wrap">   
+                                                <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                                    <div class="slds-form--stacked">
+                                                        <div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+                                                            <div class="slds-form-element">
+                                                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                                                    <svg aria-hidden="true" class="slds-input__icon" onclick="lookupRuleDef3('myLookUp-{!rowDef3}');">
+                                                                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                    </svg>
+                                                                    <input id="myLookUp-{!rowDef3}" value="{!item.RevRecRule__r.Name}" class="slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="false" aria-activedescendant=""  
+                                                                           onkeyup="lookupRuleDef3(this);"/>
+                                                                </div>
+                                                            </div>
+                                                            <div class="slds-lookup__menu" role="listbox" id="result-{!rowDef3}" style="display:none;max-height:200px;" >
+                                                                <div class="slds-lookup__item">
+                                                                    <button class="slds-button" >
+                                                                        <svg aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon--small">
+                                                                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                        </svg>&quot;<span id="keywordDef3-{!rowDef3}"></span>&quot; in Rules </button>
+                                                                </div>
+                                                                <ul class="slds-lookup__list" role="presentation" id="ui_result-{!rowDef3}">                                                                                       
+                                                                </ul>                           
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <apex:variable var="rowDef3" value="{!rowDef3 + 1}"/>
+                                        </th>
+                                    </tr>
+                                    
+                                </apex:repeat> 
+                            </tbody>
+                        </table>
+                    </div>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </div>
+    </apex:form>
+    
+    <script>
+        $(document).ready(function(){
+           overridePageMessages();    
+        });
+                
+        function overridePageMessages(){    
+            var textureEffect = '';
+            //Uncomment below line for texture effect on page messages
+            //textureEffect = 'slds-theme--alert-texture';
+                         
+            $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+            $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+            $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+            $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+                             
+            $('.errorM3').removeClass('errorM3'); 
+            $('.confirmM3').removeClass('confirmM3'); 
+            $('.infoM3').removeClass('infoM3');   
+            $('.warningM3').removeClass('warningM3');  
+        }
+        var j$ = jQuery.noConflict();
+        function lookupRuleDef3 (elm) {
+        
+            var rowCountDown = '';
+            if(typeof elm === 'string' && elm.indexOf('myLookUp-') != -1) {
+                rowCountDown = elm.split('-')[1];
+                elm = document.getElementById('lookup-' + rowCountDown);
+            } else
+                rowCountDown = elm.id.split('-')[1];
+            
+            j$('#result-'+rowCountDown).css("display","block");
+            j$('#myLookUp-'+rowCountDown).attr('aria-expanded','true'); 
+            j$('#keywordDef3-'+rowCountDown).html(j$('#myLookUp-'+rowCountDown).val());
+             
+            Visualforce.remoting.Manager.invokeAction(
+             '{!$RemoteAction.RuleToProductLineAssignmentController.queryRules}',
+             j$('#myLookUp-'+rowCountDown).val(),                                                   
+              function(result, event){
+                 if (event.status) {
+                     document.getElementById("ui_result-"+rowCountDown).innerHTML = "";
+                     populateLookupRuleDef3(result,rowCountDown,elm);
+                 } else if (event.type === 'exception') {
+                     j$('#myLookUp-'+rowCountDown) = 'ERROR: ' + event.message;   
+                 } else {
+                     j$('#myLookUp-'+rowCountDown) = 'ERROR: ' + event.message;   
+                 }
+             }, 
+             {escape: true}
+             );            
+        }
+        function populateLookupRuleDef3(result,rowCountDown,obj){
+        
+            if(result){                        
+               j$( result ).each(function() {
+                 j$('#ui_result-'+rowCountDown).append('<li class="slds-lookup__item">' + 
+                               '<a id="' + this.Id + '" href="javascript:void(0)" role="option">' + 
+                                 '<svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-icon--small">' + 
+                                   '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>' + 
+                                 '</svg>' + this.Name +'</a>' + 
+                             '</li>'); 
+               });
+               
+                var childPos = j$(obj).offset().top;
+                console.log('childPos' +childPos);
+                var parent = document.getElementById("tbl");
+                var parentPos = j$(parent).offset().top;
+                console.log('parentPos' +parentPos);
+                var childOffset = childPos - parentPos;
+                console.log('childOffset' +childOffset);
+                var resultHeight = j$('#result-' + rowCountDown).height();  
+                console.log('resultHeight' +resultHeight);
+                if(resultHeight < (childOffset-30)) {
+                    j$('#result-' + rowCountDown).css("top","auto");
+                    j$('#result-' + rowCountDown).css("bottom","32px");
+                }
+                else {
+                    
+                    j$('#result-' + rowCountDown).css("top","32px");
+                    j$('#result-' + rowCountDown).css("bottom","auto");
+                }
+                
+               j$('li.slds-lookup__item a').click(function(e) 
+                {           
+                    j$('#myLookUp-'+rowCountDown).val(j$(this)[0].innerText); 
+                    j$('#myLookUp-'+rowCountDown).attr('aria-activedescendant',j$(this)[0].id);
+                    j$('#myLookUp-'+rowCountDown).attr('aria-expanded','false');
+                    var ruleId = j$(this)[0].id;
+                    saveRuleOnOli(rowCountDown, ruleId);
+                    j$('#result-'+rowCountDown).css("display","none");
+                  });
+           }                 
+        }        
+    </script>
+    
+</apex:page>

@@ -1,0 +1,53 @@
+<apex:page id="mainpage">    
+    <c:BlockUI />
+    <!-- Code is added on 07/16/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+    <apex:tabPanel switchType="client"  value="{!If(($CurrentPage.parameters.tab == '1'), 'RuleAsg' , 'Rules')}" id="theTabPanel" styleClass="Tabclass">
+        <apex:tab label="Rules" name="Rules" id="tabRules">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="RevRecRule" id="RulePageTab"/>
+        </apex:tab>
+       
+        <apex:tab label="Rule to Product Assignment" name="Assignment" id="tabAssignment">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="RevRecProductList" id="ProductListPage"/>
+        </apex:tab>
+         
+         <apex:tab label="Rule to Product Family Assignment" name="AssignmentFamily" id="tabAssignmentFamily">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="RuleToProductLineAssignment" id="lineProductPage"/>
+        </apex:tab>
+         
+          <apex:tab label="Rule Assignment" name="RuleAsg" id="RuleAsg">
+             <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+             <apex:include pageName="RuleAssignment" id="RuleAssg"/>    
+        </apex:tab>
+       
+        <apex:tab label="Application Settings" name="tabSettings" id="tabSettings">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="RevRecAppSetting"/>
+        </apex:tab>
+        
+         <apex:tab label="Mass Calculate" name="MassCalculate" id="MassCalculate">
+             <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+             <apex:include pageName="MassRevenueCalculate" />
+        </apex:tab>
+        
+        <apex:tab label="Mass Rollup Calculate" name="Mass Rollup Calculate" id="MassRolupCalculate">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="MassRollUpCalculate" />
+        </apex:tab>
+<!--
+        <apex:tab label="Mass Revenue Update" name="Mass Revenue Update" id="MassRevenueUpdate">
+            <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+            <apex:include pageName="RevRecMassRevenueUpdate" />
+        </apex:tab>
+-->  
+        <apex:tab label="About" name="About" id="tabAbout" onTabEnter="window.top.location.href = 'http://www.appropoz.com'; return false;">
+        </apex:tab>
+        
+        <apex:tab label="Help" name="Help" id="tabHelp">
+            <apex:iframe src="{!$Resource.HelpDocument}"/>
+        </apex:tab>
+              
+    </apex:tabPanel>
+</apex:page>

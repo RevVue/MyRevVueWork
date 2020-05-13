@@ -1,0 +1,285 @@
+<apex:page controller="RevRecScheduleList" contentType="application/vnd.x-excel#RevRecLineItemSchedule.xls">    
+
+    <style>
+        .dataCell {
+            text-align : right;
+        }
+        
+        .headerRow {
+            text-align : right;
+        }
+    
+    </style>
+    
+    <apex:pageBlock >
+    
+        <!-- Multi currecy enabled -->
+       <apex:pageBlockTable value="{!RevRecSchedules}" var="item" align="center" rendered="{!AND(isMultiCurrencyEnabled, IF(overrideRule.size > 0 , overrideRule[0].Recognition_Type__c != 'Blended Revenue', rule.Recognition_Type__c != 'Blended Revenue'))}">
+            <apex:column value="{!item.schedule.Sequence__c }" headerValue="Transaction #"/>
+            
+            <apex:column headerValue="Currency Code">
+                <apex:outputText Value="{!currecyCode}" style="text-align:right;"/>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.RecognizedRev__c }"/>
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue (Cumulative)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+              		<apex:param value="{!item.recognizedCumulative}"/> 
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue (Weighted)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.RecRevWei__c }"/>
+                </apex:outputText>
+            </apex:column>
+           
+           <apex:column headerValue="Recognized Revenue (Weighted)(Cumulative)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.recognizedWeiCumulative}"/>
+                </apex:outputText>
+            </apex:column>
+           
+           <apex:column headerValue="Projected Revenue (Cumulative)" rendered="{!isShowForecastedChart}">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.forecastedCumulative}"/>
+                </apex:outputText>
+            </apex:column>
+           
+           <apex:column headerValue="Projected Revenue (Weighted)" rendered="{!isShowForecastedChart}">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.ForeRevWei__c }"/>
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column HeaderValue="Deferred Revenue">
+            	<apex:outputText value="0.00" rendered="{!AND(setPastSchDeferredWith0, item.schedule.Date__c<TODAY())}"/>
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;"> 
+                    <apex:param value="{!item.schedule.DeferredRev__c}"/>
+                </apex:outputText>
+            </apex:column> 
+            
+            <apex:column HeaderValue="Deferred Revenue (Weighted)">
+            	<apex:outputText value="0.00" rendered="{!AND(setPastSchDeferredWith0, item.schedule.Date__c<TODAY())}"/>
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;"> 
+                    <apex:param value="{!item.schedule.DefReWei__c}"/>
+                </apex:outputText>
+            </apex:column> 
+             
+            <apex:column value="{!item.schedule.Date__c}"/>
+            <apex:column value="{!item.schedule.Month__c}"/> 
+        </apex:pageBlockTable>
+        
+            <!-- Multi currecy not enabled -->
+         <apex:pageBlockTable value="{!RevRecSchedules}" var="item" align="center" rendered="{!AND(NOT(isMultiCurrencyEnabled), IF(overrideRule.size > 0 , overrideRule[0].Recognition_Type__c != 'Blended Revenue', rule.Recognition_Type__c != 'Blended Revenue'))}">
+            <apex:column value="{!item.schedule.Sequence__c}" headerValue="Transaction #"/>
+            
+            <apex:column headerValue="Currency Code">
+                <apex:outputText Value="{!currencyFormate}" style="text-align:right;"/>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.RecognizedRev__c}"/>
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue (Cumulative)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+              		<apex:param value="{!item.recognizedCumulative}"/> 
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column headerValue="Recognized Revenue (Weighted)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.RecRevWei__c }"/>
+                </apex:outputText>
+            </apex:column>
+            
+           <apex:column headerValue="Recognized Revenue (Weighted)(Cumulative)">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.recognizedWeiCumulative}"/>
+                </apex:outputText>
+            </apex:column>
+             
+           <apex:column headerValue="Projected Revenue (Cumulative)" rendered="{!isShowForecastedChart}">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.forecastedCumulative}"/>
+                </apex:outputText>
+            </apex:column>
+             
+           <apex:column headerValue="Projected Revenue (Weighted)" rendered="{!isShowForecastedChart}">
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;">
+                    <apex:param value="{!item.schedule.ForeRevWei__c }"/>
+                </apex:outputText>
+            </apex:column>
+            
+            <apex:column HeaderValue="Deferred Revenue">
+            	<apex:outputText value="0.00" rendered="{!AND(setPastSchDeferredWith0, item.schedule.Date__c<TODAY())}"/>
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;"> 
+                    <apex:param value="{!item.schedule.DeferredRev__c}"/>
+                </apex:outputText>
+            </apex:column> 
+              
+            <apex:column HeaderValue="Deferred Revenue (Weighted)">
+            	<apex:outputText value="0.00" rendered="{!AND(setPastSchDeferredWith0, item.schedule.Date__c<TODAY())}"/>
+                <apex:outputText value="{0, number, ###,###,###,##0.00}" style="text-align:right;"> 
+                    <apex:param value="{!item.schedule.DefReWei__c}"/>
+                </apex:outputText>
+            </apex:column> 
+            
+            <apex:column value="{!item.schedule.Date__c}"/>
+            <apex:column value="{!item.schedule.Month__c}"/>
+        </apex:pageBlockTable>
+                
+        <apex:outputpanel rendered="{!IF(overrideRule.size  > 0 , overrideRule[0].Recognition_Type__c == 'Blended Revenue' , rule.Recognition_Type__c == 'Blended Revenue')  && isMultiCurrencyEnabled}"> 
+            <table  class="list" border="0" cellSpacing="0" cellPadding = "0">
+                    
+                <thead style="text-align:left;background: #F2F3F3;">
+                    
+                    <!-- <th class="headerRow rt" colspan = "1" scope="col">Currecy Code</th> -->
+                    <apex:repeat value="{!listCategoryNames}" var="catName">
+                        <th class="headerRow rt" colspan = "1">{!catName}</th>
+                        <th class="headerRow rt" colspan = "1">{!catName}(Weighted)</th>
+                    </apex:repeat>
+                    <th class="headerRow rt" colspan = "1" scope="col">RevRec Sub Total</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Cumulative)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Weighted)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Weighted)(Cumulative)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Deferred Revenue</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Deferred Revenue (Weighted)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Date</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Month</th>
+                </thead>
+                    
+                <tbody>
+                    <apex:repeat value="{!revRecScheduleList}" var="item">
+                        <tr>
+                           <apex:repeat value="{!listCategoryNames}" var="mapKey">
+                               <td class="data2Col first last" style="text-align:right;">
+                                   <apex:outputText value="{!item.mapCatSchAmtWithCatSchAmtWei[mapKey][0]}" escape="false"/> 
+                               </td>
+                               <td class="data2Col first last" style="text-align:right;">
+                                   <apex:outputText value="{!item.mapCatSchAmtWithCatSchAmtWei[mapKey][1]}" escape="false"/> 
+                               </td>
+                           </apex:repeat>
+                           <td class="data2Col first last" style="text-align:right;"> 
+                               <apex:outputText value="{!item.scheduleRecRev}" escape="false" /> 
+                           </td>
+                           <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputText value="{!item.totalRecognized}" escape="false"/>
+                           </td>
+                            <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputText value="{!item.scheduleRecRevWei}" escape="false"/>
+                           </td>
+                           <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputText value="{!item.totalRecognizedWei}" escape="false" />
+                           </td>
+                            <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputtext value="0.00" escape="false" rendered="{!AND(setPastSchDeferredWith0, item.schDate1.OriginalDate__c<TODAY())}"/>
+                               <apex:outputtext value="{!item.totalDeferred}" escape="false" rendered="{!AND(NOT(setPastSchDeferredWith0), item.schDate1.OriginalDate__c<TODAY())}"/>
+                               <apex:outputtext value="{!item.totalDeferred}" escape="false" rendered="{!item.schDate1.OriginalDate__c>=TODAY()}"/>
+                           </td>
+                           <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputtext value="0.00" escape="false" rendered="{!AND(setPastSchDeferredWith0, item.schDate1.OriginalDate__c<TODAY())}"/>
+                               <apex:outputtext value="{!item.totalDeferredWei}" escape="false" rendered="{!AND(NOT(setPastSchDeferredWith0), item.schDate1.OriginalDate__c<TODAY())}"/>
+                               <apex:outputtext value="{!item.totalDeferredWei}" escape="false" rendered="{!item.schDate1.OriginalDate__c>=TODAY()}"/>
+                           </td>
+                           <td class="data2Col first last" style="text-align:right;">
+                               <apex:outputField value="{!item.schDate1.OriginalDate__c}"/>
+                           </td>
+                           <td class="data2Col first last" style="text-align:right;">
+                           	<apex:outPutText value="{!item.month}"/>
+                           </td>
+                       </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+        </apex:outputpanel> 
+                
+        <apex:outputpanel rendered="{!IF(overrideRule.size > 0 , overrideRule[0].Recognition_Type__c == 'Blended Revenue' , rule.Recognition_Type__c == 'Blended Revenue') && NOT(isMultiCurrencyEnabled)}"> 
+            <table  class="list" border="0" cellSpacing="0" cellPadding = "0">
+            
+                <thead style="text-align:left;background: #F2F3F3;">
+                    <apex:repeat value="{!listCategoryNames}" var="catName">
+	                    <th class="headerRow rt" colspan = "1">{!catName}</th>
+	                    <th class="headerRow rt" colspan = "1">{!catName}(Weighted)</th>
+	                </apex:repeat>
+                    <th class="headerRow rt" colspan = "1" scope="col">RevRec Sub Total</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Cumulative)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Weighted)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Recognized Revenue (Weighted)(Cumulative)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Deferred Revenue</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Deferred Revenue (Weighted)</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Date</th>
+                    <th class="headerRow rt" colspan = "1" scope="col">Month</th>
+                </thead>
+            
+                <tbody>
+                    <apex:repeat value="{!revRecScheduleList}" var="item">
+                    
+                        <tr>
+                            <apex:repeat value="{!item.revScheduleCategory}" var="schCat">
+                                <td class="data2Col first last" style="text-align:right;">
+                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!schCat.Amount1__c}"/> 
+                                    </apex:outputText>
+                                </td>
+                                <td class="data2Col first last" style="text-align:right;">
+                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                        <apex:param value="{!schCat.Amt_Wei__c}"/> 
+                                    </apex:outputText>
+                                </td>
+                            </apex:repeat> 
+                            
+                            <td class="data2Col first last" style="text-align:right;">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.scheduleWithoutMultiCurrency.RecognizedRev__c}"/>
+                                </apex:outputText>
+                            </td>
+                            
+                            <td class="data2Col first last" style="text-align:right;">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.totalRecognizedWithNoMultiCurency}"/>
+                                </apex:outputText>
+                            </td>
+                            
+                            <td class="data2Col first last" style="text-align:right;">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.scheduleWithoutMultiCurrency.RecRevWei__c}"/>
+                                </apex:outputText>
+                            </td>
+                            
+                            <td class="data2Col first last" style="text-align:right;">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.totalRecognizedWithNoMultiCurencyWei}"/>
+                                </apex:outputText>
+                            </td>
+                                                        
+                            <td class="data2Col first last" style="text-align:right;">
+                            	<apex:outputText value="{!currencyFormate}0.00" style="color:red;" rendered="{!AND(setPastSchDeferredWith0, item.schDate1.OriginalDate__c<TODAY())}"/>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.totalDeferredWithNoMultiCurrency}" />
+                                </apex:outputText>
+                            </td>
+                            
+                            <td class="data2Col first last" style="text-align:right;">
+                            	<apex:outputText value="{!currencyFormate}0.00" style="color:red;" rendered="{!AND(setPastSchDeferredWith0, item.schDate1.OriginalDate__c<TODAY())}"/>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.totalDeferredWithNoMultiCurrencyWei}" />
+                                </apex:outputText>
+                            </td>
+                            <td class="data2Col first last" style="text-align:right;"><apex:outputField value="{!item.schDate1.OriginalDate__c}"/></td>
+                            <td class="data2Col first last" style="text-align:right;">{!item.Month}</td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+        </apex:outputpanel>                
+    </apex:pageBlock>
+</apex:page>

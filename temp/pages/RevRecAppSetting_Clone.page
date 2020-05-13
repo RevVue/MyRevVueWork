@@ -1,0 +1,424 @@
+<apex:page controller="RevRecAppSettingController">
+	<style>
+    	.labelSize {
+        	max-width: 200px;
+        }
+        .msgIcon {
+		    display: none!important
+		}
+		.customMessage * {
+		    color: #fff!important
+		}
+		.customMessage {
+		    margin: 5px 0!important;
+		    max-width: 1280px;
+		    opacity: 1!important;
+		    width: 100%;
+		    font-size: 12px;
+		    border: 0px;
+		    padding-left: 10px;
+		}
+		.message {
+		    opacity: .1
+		}
+		.opClass {
+			width : 80%;
+		}
+    </style>
+    <script>
+		    $(document).ready(function(){
+		       overridePageMessages();    
+		    });
+		        
+		    function overridePageMessages(){    
+		        var textureEffect = '';
+		        //Uncomment below line for texture effect on page messages
+		        //textureEffect = 'slds-theme--alert-texture';
+		                     
+		        $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+		        $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+		        $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+		        $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+		                         
+		        $('.errorM3').removeClass('errorM3'); 
+		        $('.confirmM3').removeClass('confirmM3'); 
+		        $('.infoM3').removeClass('infoM3');   
+		        $('.warningM3').removeClass('warningM3');  
+		    }
+		</script>
+    <apex:form >
+        
+        <!-- Action function -->
+        <apex:actionFunction name="save" action="{!save}" />
+        <apex:actionFunction name="cancel" action="{!cancel}" />    
+        
+    	<div class="container slds-p-around--medium"> 
+            <apex:pageMessages />
+            
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid">
+                    <div class="slds-col slds-col--padded">
+                        <h1 class="slds-text-heading--medium slds-p-top-medium">Application Settings </h1>
+                    </div>
+                </div>
+            </div>
+         	<div class="container slds-p-around--medium">
+                <div class="slds-grid slds-grid--align-center">
+                    <div class="slds-col">
+                        <input class="btn slds-button slds-button--neutral" value="Save" type="button" onClick="save();" />
+                    </div>&nbsp;&nbsp;
+                    <div class="slds-col">
+                        <input class="btn slds-button slds-button--neutral" value="Cancel" type="button" onClick="cancel();" />
+                    </div>
+                </div><br/>
+                
+                <div class="slds-section-title--divider"> Selected values used as criteria to evaluate which opportunities to process </div> 
+                
+             	<!--  <div class="slds-section-title--divider">Selected values used as criteria to evaluate which opportunities to process </div> -->
+             	<apex:outputPanel id="type" layout="block" >
+                	<div class="slds-grid slds-wrap slds-form--horizontal" width="60%" >
+                    	<div class="slds-col slds-col--padded labelSize" >
+                            <label class="slds-form-element__label" >Opportunity Type: </label>
+                        </div>
+                        <div >
+                            <div class="slds-form-element" width="40%">
+                                 <label class="slds-form-element__label" for="oppLink">Available</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList id="typeSel1" styleClass="slds-select" value="{!leftOpportunityTypeSelected}" multiselect="true" style="width:250px" size="5">
+                                        <apex:selectOptions value="{!UnSelectedOpportunityType}" />
+                                    </apex:selectList>
+                                 </div>
+                             </div>	
+                        </div>
+                        <div width="84px" style="margin-left:10%;">
+                            &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+                            <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}"  style="width:100%;">
+                                    <apex:actionSupport event="onclick" action="{!OpportunityTypeSelectClick}" status="waitMsg" reRender="type"/>
+                            </apex:image>
+                            <br/><br/>
+                            <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}"  style="width:100%;">
+                                <apex:actionSupport event="onclick" action="{!OpportunityTypeUnSelectClick}" status="waitMsg" reRender="type"/>
+                            </apex:image>
+                        </div>
+                        <div style="margin-left:0%" >
+                            <div class="slds-form-element" >
+                                 <label class="slds-form-element__label" for="oppLink">Selected</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList id="typeSel2" styleClass="slds-select" value="{!rightOpportunityTypeSelected}" multiselect="true" style="width:250px" size="5">
+                                        <apex:selectOptions value="{!SelectedOpportunityType}" />
+                                    </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                	</div>
+                </apex:outputPanel>
+                
+                <!-- <div class="slds-section-title--divider"> Select Opportunity Stage(s) - (Selected values used as criteria to evaluate which opportunities to process) </div> -->
+             	<apex:outputPanel id="stage">
+                	<div class="slds-grid slds-wrap slds-form--horizontal" width="60%">
+                    	<div class="slds-col slds-col--padded labelSize">
+                            <label class="slds-form-element__label" >Opportunity Stage: </label>
+                        </div>
+                        <div >
+                            <div class="slds-form-element" width="40%">
+                                 <label class="slds-form-element__label" for="oppLink">Available</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList id="typeSel" styleClass="slds-select" value="{!leftOpportunityStageSelected}" multiselect="true" style="width:250px" size="5">
+                                        <apex:selectOptions value="{!UnSelectedOpportunityStage}" />
+                                    </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                        <div width="84px" style="margin-left:10%;">
+                            &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+                            <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}"  style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityStageSelectClick}" status="waitMsg" reRender="stage"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}"  style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityStageUnSelectClick}" status="waitMsg"  reRender="stage"/>
+		                    </apex:image>
+                        </div>
+                        <div style="margin-left:0%">
+                            <div class="slds-form-element">
+                                 <label class="slds-form-element__label" for="oppLink">Selected</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList styleClass="slds-select" value="{!rightOpportunityStageSelected}" multiselect="true" style="width:250px" size="5">
+                                        <apex:selectOptions value="{!SelectedOpportunityStage}"/>
+                                    </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                	</div>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!showRecordTypeSection}" id="stage1">
+                    <!-- <div class="slds-section-title--divider"> Select Opportunity Record Type(s) - (Selected values used as criteria to evaluate which opportunities to process) </div> -->
+                     <div class="slds-grid slds-wrap slds-form--horizontal" width="60%">
+                            <div class="slds-col slds-col--padded labelSize">
+                                <label class="slds-form-element__label" >Opportunity RecordType: </label>
+                            </div>
+                            <div >
+                                <div class="slds-form-element" width="40%">
+                                     <label class="slds-form-element__label" for="oppLink">Available</label>
+                                     <div class="slds-form-element__control">
+                                         <apex:selectList styleClass="slds-select" value="{!leftOpportunityRecordTypeSelected}" multiselect="true" style="width:250px" size="5">
+                                            <apex:selectOptions value="{!UnSelectedOpportunityRecordType}" />
+                                        </apex:selectList>
+                                     </div>
+                                 </div>
+                            </div>
+                            <div width="84px" style="margin-left:10%;">
+                                &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+                                <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}" style="width:100%;">
+		                        	<apex:actionSupport event="onclick" action="{!OpportunityRecordTypeSelectClick}" status="waitMsg" reRender="stage1"/>
+                                </apex:image>
+                                <br/><br/>
+                                <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}" style="width:100%;">
+                                    <apex:actionSupport event="onclick" action="{!OpportunityRecordTypeUnSelectClick}" status="waitMsg" reRender="stage1"/>
+                                </apex:image>
+                            </div>
+                            <div style="margin-left:0%" >
+                                <div class="slds-form-element">
+                                     <label class="slds-form-element__label" for="oppLink">Selected</label>
+                                     <div class="slds-form-element__control">
+                                         <apex:selectList styleClass="slds-select" value="{!rightOpportunityRecordTypeSelected}" multiselect="true"  style="width:250px" size="5">
+                                            <apex:selectOptions value="{!SelectedOpportunityRecordType}" />
+                                        </apex:selectList>
+                                     </div>
+                                 </div>
+                            </div>
+                        </div>
+                </apex:outputPanel>
+                
+                <div class="slds-section-title--divider"> Selected date(s) will be available for use when defining Rules </div> 
+             	<apex:outputPanel id="abcd" layout="block">
+                	<div class="slds-grid slds-wrap slds-form--horizontal" width="60%">
+                    	<div >
+                            <label class="slds-form-element__label" >Revenue Recognition Start Date: </label>
+                        </div>
+                        <div >
+                            <div class="slds-form-element" width="40%">
+                                 <label class="slds-form-element__label" for="oppLink">Available</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList styleClass="slds-select" id="sel1" value="{!leftStartSelected}" multiselect="true" style="width:250px" size="7">
+					                    <apex:selectOptions value="{!UnSelectedStartDate}" />
+					                </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                        <div width="84px" style="margin-left:10%;">
+                            &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}" style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!StartSelectClick}" status="waitMsg" reRender="abcd"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}" style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!StartUnSelectClick}" status="waitMsg" reRender="abcd"/>
+		                    </apex:image>
+                        </div>
+                         <div  style="margin-left:0%" >
+                            <div class="slds-form-element">
+                                 <label class="slds-form-element__label" for="oppLink">Selected</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList styleClass="slds-select" id="sel2" value="{!rightStartSelected}" multiselect="true" style="width:250px" size="7">
+					                    <apex:selectOptions value="{!SelectedStartDate}" />
+					                </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                	</div>
+                </apex:outputPanel>
+                
+                <!-- <div class="slds-section-title--divider"> Selected date(s) will be available for use when defining Rules </div> -->
+             	<apex:outputPanel id="endDate">
+                	<div class="slds-grid slds-wrap slds-form--horizontal" width="60%" >
+                    	<div >
+                            <label class="slds-form-element__label" >Revenue Recognition End Date: </label>
+                        </div>
+                        <div >
+                            <div class="slds-form-element" width="40%">
+                                 <label class="slds-form-element__label" for="oppLink">Available</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList styleClass="slds-select" id="endSel1" value="{!leftEndSelected}" multiselect="true" style="width:250px" size="7">
+					                    <apex:selectOptions value="{!UnSelectedEndDate}" />
+					                </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                        <div width="84px" style="margin-left:10%;">
+                            &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+                            <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}" style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!EndSelectClick}" status="waitMsg" reRender="endDate"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}" style="width:100%;">
+		                        <apex:actionSupport event="onclick" action="{!EndUnSelectClick}" status="waitMsg" reRender="endDate"/>
+		                    </apex:image>
+                        </div>
+                        <div style="margin-left:0%">
+                            <div class="slds-form-element">
+                                 <label class="slds-form-element__label" for="oppLink">Selected</label>
+                                 <div class="slds-form-element__control">
+                                     <apex:selectList styleClass="slds-select" id="endSel2" value="{!rightEndSelected}" multiselect="true" style="width:250px" size="7">
+					                    <apex:selectOptions value="{!SelectedEndDate}" />
+					                </apex:selectList>
+                                 </div>
+                             </div>
+                        </div>
+                	</div> 
+                </apex:outputPanel>
+                
+                <apex:outputPanel > 
+                	<div class="slds-section-title--divider" style="margin-top: 1%;"> Select the time of month for Revenue Recognition Month to move to the next month </div>
+	                <div class="slds-grid slds-wrap slds-form--horizontal" >
+	                	<div class="slds-col slds-col--padded">
+                            <label class="slds-form-element__label" >Time of Month Selection Types </label>
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                            <apex:selectRadio value="{!AppSettings.Time_of_Month_Selection_Types__c}" id="timeOfMonthType" layout="pageDirection" title="Select Revenue Recognition for the month end type">
+					            <apex:actionSupport event="onclick" action="{!TimeOfMonthSelectionTypes}" rerender="detail" />
+					            <apex:selectOptions value="{!TimeofMonthSelectOptions}"/>
+					        </apex:selectRadio>
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                            <apex:outputPanel id="detail">
+				                <apex:outputPanel rendered="{!showDateOfMonth}">
+				                    <apex:outputLabel value="Date of month setting: "/>
+				                    <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_date_of_month__c}" id="DateOfMonth" size="1"> 
+				                        <apex:selectOptions value="{!MonthDaySelectOptions}" />
+				                    </apex:selectList>
+				                </apex:outputPanel>
+				                
+				                <apex:outputPanel rendered="{!showCertainWeekDay}">
+				                    <apex:outputLabel value="Week and day setting: "/>
+				                    <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_weekday__c}" id="CertainWeekDay" size="1"> 
+				                         <apex:selectOption itemValue="1st" itemLabel="1st"/>
+				                         <apex:selectOption itemValue="2nd" itemLabel="2nd"/>
+				                         <apex:selectOption itemValue="3rd" itemLabel="3rd"/>
+				                         <apex:selectOption itemValue="4th" itemLabel="4th"/>
+				                         <apex:selectOption itemValue="Last" itemLabel="Last"/>
+				                    </apex:selectList>
+				                    &nbsp;
+				                      <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_weekday_day__c}" id="CertainWeekDayDay" size="1"> 
+				                         <apex:selectOption itemValue="Monday" itemLabel="Monday"/>
+				                         <apex:selectOption itemValue="Tuesday" itemLabel="Tuesday"/>
+				                         <apex:selectOption itemValue="Wednesday" itemLabel="Wednesday"/>
+				                         <apex:selectOption itemValue="Thursday" itemLabel="Thursday"/>
+				                         <apex:selectOption itemValue="Friday" itemLabel="Friday"/>
+				                         <apex:selectOption itemValue="Saturday" itemLabel="Saturday"/>
+				                         <apex:selectOption itemValue="Sunday" itemLabel="Sunday"/>
+				                    </apex:selectList>
+				                    <apex:outputLabel value=" of month"/>
+				                </apex:outputPanel>
+					        </apex:outputPanel>
+                        </div>
+	                </div>
+	            </apex:outputPanel>
+	            
+	            
+	            <apex:outputPanel > 
+                	<div class="slds-section-title--divider" style="margin-top: 1%;"> Select Which Date in the Month to Use for the Transaction Date for each Month </div>
+	                <div class="slds-grid slds-wrap slds-form--horizontal" >
+	                	<div class="slds-col slds-col--padded">
+                            <label class="slds-form-element__label" >Time of Month Selection Types </label>
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                            <apex:selectRadio value="{!AppSettings.Time_of_Month_Selection_Types_tr__c}" id="timeOfMonthTypeTr" layout="pageDirection" title="Select Revenue Recognition for the month end type">
+					            <apex:actionSupport event="onclick" action="{!TimeOfMonthSelectionTypesTr}" rerender="detailTr" />
+					            <apex:selectOptions value="{!TimeofMonthSelectOptions}"/>
+					        </apex:selectRadio>
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                        	<apex:outputPanel id="detailTr">
+				                <apex:outputPanel rendered="{!showDateOfMonthTr}">
+				                    <apex:outputLabel value="Date of month setting: "/>
+				                    <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_date_of_month_tr__c}" id="DateOfMonthTr" size="1"> 
+				                        <apex:selectOptions value="{!MonthDaySelectOptions}" />
+				                    </apex:selectList>
+				                </apex:outputPanel>
+			                
+				                <apex:outputPanel rendered="{!showCertainWeekDayTr}">
+				                    <apex:outputLabel value="Week and day setting: "/>
+				                    <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_weekday_tr__c}" id="CertainWeekDayTr" size="1"> 
+				                         <apex:selectOption itemValue="1st" itemLabel="1st"/>
+				                         <apex:selectOption itemValue="2nd" itemLabel="2nd"/>
+				                         <apex:selectOption itemValue="3rd" itemLabel="3rd"/>
+				                         <apex:selectOption itemValue="4th" itemLabel="4th"/>
+				                         <apex:selectOption itemValue="Last" itemLabel="Last"/>
+				                    </apex:selectList>
+				                    &nbsp;
+				                      <apex:selectList styleClass="slds-select" value="{!AppSettings.Certain_weekday_day_tr__c}" id="CertainWeekDayDayTr" size="1"> 
+				                         <apex:selectOption itemValue="Monday" itemLabel="Monday"/>
+				                         <apex:selectOption itemValue="Tuesday" itemLabel="Tuesday"/>
+				                         <apex:selectOption itemValue="Wednesday" itemLabel="Wednesday"/>
+				                         <apex:selectOption itemValue="Thursday" itemLabel="Thursday"/>
+				                         <apex:selectOption itemValue="Friday" itemLabel="Friday"/>
+				                         <apex:selectOption itemValue="Saturday" itemLabel="Saturday"/>
+				                         <apex:selectOption itemValue="Sunday" itemLabel="Sunday"/>
+				                    </apex:selectList>
+				                    <apex:outputLabel value=" of month"/>
+				                </apex:outputPanel>
+			        		</apex:outputPanel>
+                        </div>
+	                </div>
+	            </apex:outputPanel>
+                <div class="container slds-p-around--medium">
+                	<div class="slds-section-title--divider"> Close Date Validation </div>
+                 		<div class="slds-grid slds-wrap slds-form--horizontal" >
+                     		<apex:outputLabel > Is Closed Date Validation &nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                     		<label class="slds-checkbox">
+                     			<apex:inputCheckbox styleClass="slds-checkbox" Value="{!AppSettings.Is_Closed_Date_Validation__c}" />
+								<span class="slds-checkbox--faux"></span>
+							</label>
+                 		</div>
+                	</div>
+        		</div> 
+        		<div class="container slds-p-around--medium">
+                	<div class="slds-section-title--divider"> Validate Amortized Milestones Against Line Item </div>
+                 	<div class="slds-grid slds-wrap slds-form--horizontal" >
+                    		<apex:outputLabel > Validate Amortized Milestones Against Line Item &nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                    		<label class="slds-checkbox">
+                     		<apex:inputCheckbox styleClass="slds-checkbox" Value="{!AppSettings.Validate_Amortized_Milestones_Against_Li__c}" />
+							<span class="slds-checkbox--faux"></span>
+						</label>
+                 	</div>
+        		</div>   
+				
+				<!-- Code added 06/03/2018 - As per to apply Past Schedule Deferred with 0.00 value -->
+				<div class="container slds-p-around--medium">
+                	<div class="slds-section-title--divider"> Opportunity Chart Preference Default</div>
+                 	<div class="slds-grid slds-wrap slds-form--horizontal" >
+                        <apex:outputLabel > &nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                        <label class="slds-checkbox">
+                            <apex:selectRadio value="{!AppSettings.Chart_Pref__c}" id="chartPref" layout="pageDirection" title="Opportunity Chart Preference Default">
+                                <apex:actionSupport event="onclick" action="{!chartPreferenceToShow}" rerender="detail" />
+                                <apex:selectOptions value="{!ChartPreference}"/>
+                            </apex:selectRadio>
+                        </label>
+                 	</div> 
+        		</div>     
+        		                     	
+            	<!-- Outpanel to show block UI -->
+            <apex:outputpanel >
+                <apex:actionstatus id="waitMsg">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height: 100%; background: rgba(0, 0, 0, 0.5); width: 100%;position:fixed;top:0px;">
+                            <div class="waitingHolder" style="height:40px; width: 150px; z-index: 100000;margin:0 auto;position:fixed;left:50%;top:50%; margin:-75px 0 0 -135px;border-radius: 5px;background:#ECECE3;padding:10px;text-align: center;vertical-align: middle;border: 1px solid #97CAFF;-moz-box-shadow: 3px 3px 4px #000;-webkit-box-shadow: 3px 3px 4px #000;box-shadow: 3px 3px 4px #000;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." /> 
+                                <span class="waitingDescription" style="color:black;">
+                                    Please Wait...
+                                </span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel> 
+            
+   		</div>
+   </apex:form> 
+</apex:page>

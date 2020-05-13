@@ -1,0 +1,575 @@
+<apex:page controller="RevRecScheduleSetControllerCopy" showHeader="false">
+	<apex:stylesheet value="{!URLFOR($Resource.SLDS0121, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />    
+    
+    <!-- CSS -->
+    <style>
+    	.color-box {
+		    width: 10px;
+		    height: 10px;
+		}
+        .rt{text-align:right;}
+        .slds [hidden], .slds template {
+		    display: block;
+		}
+    </style>
+    <!-- /CSS -->
+    <script>
+        function goToOpp() {
+            var oppId = '{!opportunity.Id}';
+            var theme = '{!$User.UITheme }';
+            if(theme == 'Theme3' ) {  
+                try {
+                	var includingProtocol = '/one/one.app?source=aloha#/sObject/' + oppId + '/view'; 
+                	window.open(includingProtocol, "_parent");
+                } catch(err) {}
+                
+            }
+            else {
+                var loc = window.location;
+                var includingProtocol = loc.protocol + "//" + loc.hostname + '/' + oppId;
+                window.open(includingProtocol, "_parent");
+            }
+        }
+    </script> 
+    <!-- Form -->
+    <apex:form >
+		
+        <div class="slds">    
+            
+            <!-- Page message -->
+            <apex:pageMessages />
+            
+            <div class="slds-page-header" role="banner">
+                <div class="slds-grid">
+                    <div class="slds-col slds-col--padded">
+                        <img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" />  
+                        <h2 class="slds-text-heading--medium slds-p-top-small">Revenue Recognition Schedules - {!opportunity.Name}</h2>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="container slds-p-around--medium">
+               
+                <!-- Button -->
+                <div class="slds-grid slds-grid--align-center">
+                    <div class="slds-col">
+                        <apex:commandButton styleclass="btn slds-button slds-button--neutral" onclick="goToOpp();" oncomplete="window.close();"  value="Back to Opportunity"/>
+                		<apex:commandButton styleclass="btn slds-button slds-button--neutral" action="{!ExportToExcel}" value="Export to Excel"/>
+                    </div> 
+                </div><br/>
+                
+                <div class="slds-section-title--divider"> Summary </div> 
+                <div class="slds-scrollable--x">
+                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Today">Today</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Total Opportunity">Total Opportunity</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Total Recognized">Total Recognized</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Total Deferred">Total Deferred</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Total Residual">Total Residual</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="col">
+                                    <div class="slds-truncate"><apex:outputField value="{!opp.CloseDate}" /></div>
+                                </th>
+                                <apex:outputPanel rendered="{!isMultiCurrencyEnabled}">
+                                <th scope="col">
+                                    <div class="slds-truncate"><apex:outputText value="{!oppTotalOpportunity}"  /> </div><br/>
+                                    <div class="slds-truncate" style="color:green;float:left;"><apex:outputText value="{!oppTotalOpportunityWei}"  /></div>
+                        			<div style="color:#f48c42;float:left;">(Weighted)</div> 
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate"><apex:outputText value="{!oppTotalRecognized}"  /></div><br/>
+                                    <!--<div class="slds-truncate" style="color:green;float:left;"><apex:outputText value="{!oppTotalRecognizedWei}"  /></div>
+                                    <div style="color:#f48c42;float:left;">(Weighted)</div> -->
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate"><apex:outputText value="{!oppTotalDeferred}"  /> </div><br/>
+                                    <!--<div class="slds-truncate" style="color:green;float:left;"><apex:outputText value="{!oppTotalDeferredWei}"  /> </div>
+                                    <div style="color:#f48c42;float:left;">(Weighted)</div>-->
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate"> <apex:outputText value="{!oppTotalResidual}"  /></div><br/>
+                                    <div class="slds-truncate" style="color:green;float:left;"><apex:outputText value="{!oppTotalResidualWei}"  /> </div>
+                                    <div style="color:#f48c42;float:left;">(Weighted)</div>
+                                </th>
+                                </apex:outputPanel>
+                                <!-- Checking for the MultiCurrency not Enable -->
+                                <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}">
+                                    <th scope="col">
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"> 
+                                                <apex:param value="{!Opportunity.REVvue_TotalOpportunity__c }"/>
+                                            </apex:outputText>
+                                        </div>
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"> 
+                                                <apex:param value="{!Opportunity.REVvue_Total_Opp_wei__c }"/>
+                                            </apex:outputText>
+                                            <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                                                <span style="color:#f48c42;">(Weighted)</span> 
+                                            </apex:outputPanel>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!Opportunity.REVvue_TotalRecognized__c }"/>
+                                            </apex:outputText>     
+                                        </div>
+                                        <!--<div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!Opportunity.REVvue_TotalRecognizedwei__c }"/>
+                                            </apex:outputText>  
+                                            <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                                                <span style="color:#f48c42;">(Weighted)</span> 
+                                            </apex:outputPanel>
+                                        </div>-->
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" > 
+                                                <apex:param value="{!Opportunity.REVvue_TotalDeferred__c }"/>
+                                            </apex:outputText>    
+                                        </div>
+                                        <!--<div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" > 
+                                                <apex:param value="{!Opportunity.REVvue_TotalDeferredwei__c }"/>
+                                            </apex:outputText>    
+                                            <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                                                <span style="color:#f48c42;">(Weighted)</span> 
+                                            </apex:outputPanel>
+                                        </div>-->
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" >
+                                                <apex:param value="{!Opportunity.REVvue_TotalResidual__c}"/>
+                                            </apex:outputText>    
+                                        </div>
+                                        <div class="slds-truncate"> 
+                                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" >
+                                                <apex:param value="{!Opportunity.REVvue_TotalResidualwei__c}"/>
+                                            </apex:outputText>    
+                                            <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                                                <span style="color:#f48c42;">(Weighted)</span> 
+                                            </apex:outputPanel>
+                                        </div>
+                                    </th>
+                                </apex:outputPanel>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Detail section -->
+                <div class="slds-section-title--divider"> Detail </div> 
+                
+	                <apex:outputPanel >
+					
+						<span style="display:inline-block;">
+							<span>
+								<!-- Chart for Recognized and Deferred Revenue -->
+								<apex:chart data="{!barChartData}" height="300" width="350" colorset="{!Colors}" resizable="true">
+								    <apex:axis type="Numeric" position="left" title="Revenue" grid="true" fields="RecognizedCumulative,totalForecastedZero,Deferred" dashSize="2">
+								        <apex:chartLabel /> 
+								    </apex:axis>
+								    <apex:axis type="Category" position="bottom" fields="transDate" title="Date">
+								        <apex:chartLabel rotate="270"/>
+								    </apex:axis>
+								    <apex:barSeries orientation="vertical" axis="left" stacked="false" xField="transDate" yField="RecognizedCumulative,totalForecastedZero,Deferred" colorsProgressWithinSeries="true"/>
+								    <apex:lineSeries axis="left" yField="Recognized" xField="transDate" markerType="circle" markerSize="4" markerFill="#515151" strokeColor="515151"/>
+								</apex:chart>
+							</span>
+							<span style="width:150px;">
+			               		<table>
+			               			<apex:outputPanel rendered="{!isShowPastLegends}">
+			               				<tr>
+				               				<td><div class="color-box" style="background-color:#006400;"></div></td>
+				               				<td>Past Recognized(Cumulative)</td>
+				               			</tr>
+				               			<tr>
+				               				<td><div class="color-box" style="background-color:#FF6600;"></div></td>
+				               				<td>Past Deferred</td>
+				               			</tr>
+			               			</apex:outputPanel>
+			               			<apex:outputPanel rendered="{!isShowFutureLegends}">
+				               			<tr>
+				               				<td><div class="color-box" style="background-color:#0000FF;"></div></td>
+				               				<td>Future Recognized(Cumulative)</td>
+				               			</tr>
+				               			<tr>
+				               				<td><div class="color-box" style="background-color:#FFFF00;"></div></td>
+				               				<td>Future Deferred</td>
+				               			</tr>
+			               			</apex:outputPanel>
+			               		</table>
+			               	</span>
+						</span>
+						
+						<span style="display:inline-block;">
+							<span style="display:inline-block;">
+								<!-- Chart for Recognized (Weighted) and Deferred Revenue (Weighted) -->
+								<apex:chart data="{!barChartData}" height="300" width="350" colorset="{!Colors}" rendered="{!isShowRevenueWeiChart}" resizable="true"> 
+								    <apex:axis type="Numeric" position="left" title="Revenue (Weighted)" grid="true" fields="RecognizedWeightedCumulative,totalForecastedZero,DeferredWeighted" dashSize="2">
+								        <apex:chartLabel /> 
+								    </apex:axis>
+								    <apex:axis type="Category" position="bottom" fields="transDate" title="Date">
+								        <apex:chartLabel rotate="270"/>
+								    </apex:axis>
+								    <apex:barSeries orientation="vertical" axis="left" stacked="false" xField="transDate" yField="RecognizedWeightedCumulative,totalForecastedZero,DeferredWeighted" colorsProgressWithinSeries="true"/>
+                                    <apex:lineSeries yField="RecognizedWeighted" axis="left" xField="transDate" markerType="circle" markerSize="4" markerFill="#515151" strokeColor="515151"/>
+								</apex:chart>
+							</span>
+							<span style="width:150px;">
+			               		<apex:outputPanel rendered="{!isShowRevenueWeiChart}">
+			               			<table>
+			               				<apex:outputPanel rendered="{!isShowPastLegends}">
+					               			<tr>
+					               				<td><div class="color-box" style="background-color:#006400;"></div></td>
+					               				<td>Past Recognized Weighted(Cumulative)</td>
+					               			</tr>
+					               			<tr>
+					               				<td><div class="color-box" style="background-color:#FF6600;"></div></td>
+					               				<td>Past Deferred Weighted</td>
+					               			</tr>
+				               			</apex:outputPanel>
+				               			<apex:outputPanel rendered="{!isShowFutureLegends}">
+					               			<tr>
+					               				<td><div class="color-box" style="background-color:#0000FF;"></div></td>
+					               				<td>Future Recognized Weighted(Cumulative)</td>
+					               			</tr>
+					               			<tr>
+					               				<td><div class="color-box" style="background-color:#FFFF00;"></div></td>
+					               				<td>Future Deferred Weighted</td>
+					               			</tr>
+				               			</apex:outputPanel>
+				               		</table>
+			               		</apex:outputPanel>
+			               	</span>
+		               	</span>
+		
+						<span style="display:inline-block;">
+							<span style="display:inline-block;">
+								<!-- Chart for Forecaste Revenue and Weighted Revenue -->
+								<apex:chart data="{!barChartData}" height="300" width="350" colorset="{!Colors}" rendered="{!isShowForecastedChart}" resizable="true">
+								    <apex:axis type="Numeric" position="left" title="Projected Revenue" grid="true" fields="ForecastedCumulative,totalForecastedZero,totalForecastedZero" dashSize="2">
+								        <apex:chartLabel /> 
+								    </apex:axis>
+								    <apex:axis type="Category" position="bottom" fields="transDate" title="Date">
+								        <apex:chartLabel rotate="270"/>
+								    </apex:axis>
+								    <apex:barSeries orientation="vertical" axis="left" stacked="false" xField="transDate" yField="ForecastedCumulative,totalForecastedZero,totalForecastedZero" colorsProgressWithinSeries="true"/>
+                                    <apex:lineSeries yField="Forecasted" axis="left" xField="transDate" markerType="circle" markerSize="4" markerFill="#515151" strokeColor="515151"/>
+								</apex:chart>
+							</span>
+							<span style="width:150px;">
+			               		<apex:outputPanel rendered="{!isShowForecastedChart}">
+			               			<table>
+			               				<apex:outputPanel rendered="{!isShowPastLegends}">
+                                            <tr>
+                                                <td><div class="color-box" style="background-color:#006400;"></div></td>
+                                                <td>Past Projected(Cumulative)</td>
+                                            </tr>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel rendered="{!isShowFutureLegends}">
+                                            <tr>
+                                                <td><div class="color-box" style="background-color:#0000FF;"></div></td>
+                                                <td>Future Projected(Cumulative)</td>
+                                            </tr>
+				               			</apex:outputPanel>
+				               		</table>
+			               		</apex:outputPanel>
+			               	</span>
+						</span>
+                        <span style="display:inline-block;">
+							<span style="display:inline-block;">
+								<!-- Chart for Forecaste Revenue and Weighted Revenue -->
+								<apex:chart data="{!barChartData}" height="300" width="350" colorset="{!Colors}" rendered="{!isShowForecastedChart}" resizable="true">
+								    <apex:axis type="Numeric" position="left" title="Projected Revenue" grid="true" fields="ForecastedWeiCummulative,totalForecastedZero,totalForecastedZero" dashSize="2">
+								        <apex:chartLabel /> 
+								    </apex:axis>
+								    <apex:axis type="Category" position="bottom" fields="transDate" title="Date">
+								        <apex:chartLabel rotate="270"/>
+								    </apex:axis>
+								    <apex:barSeries orientation="vertical" axis="left" stacked="false" xField="transDate" yField="ForecastedWeiCummulative,totalForecastedZero,totalForecastedZero" colorsProgressWithinSeries="true"/>
+                                    <apex:lineSeries yField="ForecastedWeighted" axis="left" xField="transDate" markerType="circle" markerSize="4" markerFill="#515151" strokeColor="515151"/>
+								</apex:chart>
+							</span>
+							<span style="width:150px;">
+			               		<apex:outputPanel rendered="{!isShowForecastedChart}">
+			               			<table>
+			               				<apex:outputPanel rendered="{!isShowPastLegends}">
+                                            <tr>
+                                                <td><div class="color-box" style="background-color:#006400;"></div></td>
+                                                <td>Past Projected Weighted(Cumulative)</td>
+                                            </tr>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel rendered="{!isShowFutureLegends}">
+                                            <tr>
+                                                <td><div class="color-box" style="background-color:#0000FF;"></div></td>
+                                                <td>Future Projected Weighted(Cumulative)</td>
+                                            </tr>
+                                        </apex:outputPanel>
+				               		</table>
+			               		</apex:outputPanel>
+			               	</span>
+						</span>
+					</apex:outputPanel>
+			
+                <div class="slds-scrollable--x">
+                    
+                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="{!$Label.appropozsln__sequence_title}">{!$Label.appropozsln__sequence_title}</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Recognized Revenue">Recognized Revenue</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Recognized Revenue(Cumulative)">Recognized Revenue(Cumulative)</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Recognized Revenue(Weighted)">Recognized Revenue(Weighted)</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Recognized Revenue(Weighted)(Cumulative)">Recognized Revenue(Weighted)(Cumulative)</div>
+                                </th>
+                                <apex:outputPanel rendered="{!isShowForecastedChart}">
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Projected Revenue(Cumulative)">Projected Revenue(Cumulative)</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Projected Revenue(Weighted)">Projected Revenue(Weighted)</div>
+                                    </th>
+                                </apex:outputPanel>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Deferred Revenue">Deferred Revenue</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Deferred Revenue">Deferred Revenue(Weighted)</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Year">Year</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Month">Month</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <apex:outputPanel rendered="{!isMultiCurrencyEnabled}">
+                            <tbody>
+                                <apex:repeat value="{!revrecSchedules}" var="item">
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.sequence}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                        						<apex:outputText value="{!item.sequence}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                        						<apex:outputText value="{!item.scheduleRecRev}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.scheduleRecRevCumulative}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                        						<apex:outputText value="{!item.scheduleRecRevCumulative}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div style="color:green;" class="slds-truncate">
+                                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div style="color:green;" class="slds-truncate">
+                                                <apex:outputText value="{!item.schRecRevWeiCumulative}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                <apex:outputText value="{!item.schRecRevWeiCumulative}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <apex:outputPanel rendered="{!isShowForecastedChart}">
+                                            <th scope="col">
+                                                <div style="color:green;" class="slds-truncate">
+                                                    <apex:outputText value="{!item.schForecastedRevCumulative}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                    <apex:outputText value="{!item.schForecastedRevCumulative}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div style="color:green;" class="slds-truncate">
+                                                    <apex:outputText value="{!item.schForecastedRevWei}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                    <apex:outputText value="{!item.schForecastedRevWei}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                                </div>
+                                            </th>
+                                        </apex:outputPanel>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="0.00"  style="color:black;" rendered="{!AND(setPastSchDeferredWith0,item.scheduleDate<TODAY())}"/>
+                                                <apex:outputText value="{!item.scheduleDeferred}"  style="color:black;" rendered="{!AND(Not(setPastSchDeferredWith0),item.scheduleDate<TODAY())}"/>
+                                                <apex:outputText value="{!item.scheduleDeferred}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div style="color:green;" class="slds-truncate">
+                                                <apex:outputText value="0.00"  style="color:black;" rendered="{!AND(setPastSchDeferredWith0,item.scheduleDate<TODAY())}"/>
+                                                <apex:outputText value="{!item.scheduleDeferredWei}"  style="color:black;" rendered="{!AND(Not(setPastSchDeferredWith0),item.scheduleDate<TODAY())}"/>
+                                                <apex:outputText value="{!item.scheduleDeferredWei}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.schYear}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                <apex:outputText value="{!item.schYear}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.month}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                                <apex:outputText value="{!item.month}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </apex:repeat> 
+                            </tbody>
+                        </apex:outputPanel>
+                        
+                        <!-- apex variable to show row number for schedules when multicurrency is disable -->
+                        <apex:variable value="{!0}" var="rowNum"/>
+                        
+                        <apex:outputPanel rendered="{!NOT(isMultiCurrencyEnabled)}">
+                            <tbody>
+                                <apex:repeat value="{!scheduleWrapper}" var="item" >
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                                                <apex:outputText value="{!rowNum}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}"/>
+                                                <apex:outputText value="{!rowNum}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                    <apex:param value="{!item.schedule.RecognizedRev__c}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.schedule.RecognizedRev__c}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                    <apex:param value="{!item.cumulativeRecognized}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.cumulativeRecognized}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                    <apex:param value="{!item.schedule.RecRevWei__c}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.schedule.RecRevWei__c}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                    <apex:param value="{!item.recognizedWeiCumulative}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.recognizedWeiCumulative}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <apex:outputPanel rendered="{!isShowForecastedChart}">
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                        <apex:param value="{!item.forecastedCumulative}"/>
+                                                    </apex:outputText>
+                                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                        <apex:param value="{!item.forecastedCumulative}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}">
+                                                        <apex:param value="{!item.schedule.ForeRevWei__c}"/>
+                                                    </apex:outputText>
+                                                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                        <apex:param value="{!item.schedule.ForeRevWei__c}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </th>
+                                        </apex:outputPanel>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="0.00" style="color:red;" rendered="{!AND(setPastSchDeferredWith0,item.schedule.Date__c<TODAY())}">
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!AND(NOT(setPastSchDeferredWith0),item.schedule.Date__c<TODAY())}">
+                                                    <apex:param value="{!item.schedule.DeferredRev__c}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.schedule.DeferredRev__c}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="0.00" style="color:red;" rendered="{!AND(setPastSchDeferredWith0,item.schedule.Date__c<TODAY())}">
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!AND(NOT(setPastSchDeferredWith0),item.schedule.Date__c<TODAY())}">
+                                                    <apex:param value="{!item.schedule.DefReWei__c}"/>
+                                                </apex:outputText>
+                                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}">
+                                                    <apex:param value="{!item.schedule.DefReWei__c}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.schedule.RecYear__c}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}"/>
+                                                <apex:outputText value="{!item.schedule.RecYear__c}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                <apex:outputText value="{!item.schedule.RecMonth__c}" style="color:black;" rendered="{!item.schedule.Date__c<TODAY()}"/>
+                                                <apex:outputText value="{!item.schedule.RecMonth__c}" style="color:green;" rendered="{!item.schedule.Date__c>=TODAY()}"/>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </apex:repeat> 
+                            </tbody>
+                        </apex:outputPanel>
+                    </table>
+                </div> 
+            </div>
+        </div>
+    </apex:form><!-- /Form -->
+</apex:page>

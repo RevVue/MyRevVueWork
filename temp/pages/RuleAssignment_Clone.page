@@ -1,0 +1,553 @@
+<!-- 
+    Description     :   This page is used to create Rule assignment record and assign RevRecRule on the opportunity and product.
+    
+    Created Date    :   03/25/2017
+
+    Version         :   V_1.0
+
+    Revision Log    :   V_1.0 - Craeted
+ -->
+<apex:page showHeader="false" sidebar="false" controller="RuleAssignmentController" tabStyle="RevRecAppSetting__c" id="page">
+    
+    <script>
+        function checkAll(obj, listSize) { 
+            var preFix = 'mainpage:RuleAssg:page:form:theRepeat1:';
+            var suffix = ':myNewChk';
+                       
+            for(i =0; i < parseInt(listSize) ; i++) {
+                var idP = preFix + i + suffix;
+                document.getElementById(idP).checked = obj.checked;
+            }
+        }   
+        
+        //This method is used to open popup window
+        var $a = jQuery.noConflict();
+        function showSplitPopup() {
+            console.log('check if popup called 1:: ');
+            $a(".modalPopUpClass").show();   
+            console.log('check if popup called 2:: ');
+            $a("#blockUIDiv").show();
+            $a(".ui-icon-closethick").bind('click', function() {
+                $a("#blockUIDiv").hide();
+                $a(".modalPopUpClass").dialog("close");
+        
+            }); 
+        }
+        
+        function closePopUp() {
+            $a("#blockUIDiv").hide();
+            $a(".modalPopUpClass").hide();
+        }
+        
+        //This method is used to show alerts 
+        function showPopup (fieldName , operatorName, rowCount) {
+            //if field name is none then show alert ow call controller method
+             if(fieldName == 'None') { 
+                alert('Please select any field/Operator [Opportunity , Product , Family ] from drop down .');
+             }else if(operatorName == 'None' || operatorName == '') {
+                 alert('Please select any Operator [Equals/Not Equals] from drop down .');
+             }else //Calling method
+                showPopUP(fieldName , rowCount);
+        }
+        
+        //This function is used to call search method 
+        function submitForm(eve) {      
+             if (eve.which == 13 || eve.keyCode == 13) {
+                 document.getElementsByClassName('searchBtn')[0].click();
+                 return false;
+             }
+        } 
+        
+         $(document).ready(function(){
+	       overridePageMessages();    
+	    });
+	        
+	    function overridePageMessages(){    
+	        var textureEffect = '';
+	        //Uncomment below line for texture effect on page messages
+	        //textureEffect = 'slds-theme--alert-texture';
+	                     
+	        $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+	        $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+	        $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+	        $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+	                         
+	        $('.errorM3').removeClass('errorM3'); 
+	        $('.confirmM3').removeClass('confirmM3'); 
+	        $('.infoM3').removeClass('infoM3');   
+	        $('.warningM3').removeClass('warningM3');  
+	    }  
+        document.onkeypress = submitForm 
+        
+       
+    </script>
+    
+    <style>
+        .modalPopUpClass {
+            width: 80%;
+            height: 90%;
+            position: absolute;
+            left: 20%;
+            top: -10%;
+            overflow:scroll;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.72);
+            opacity: 1;
+        }
+        @media all and (min-width: 768px)  {
+			.inputElement {
+				max-width: 200px;
+			}
+        	.inputLookupElement {
+        		max-width: 336px;
+        	}
+        	.selectList {
+				max-width: 300px;
+			}
+    	}
+    	.msgIcon {
+		    display: none!important
+		}
+		.customMessage * {
+		    color: #fff!important
+		}
+		.customMessage {
+		    margin: 5px 0!important;
+		    max-width: 1280px;
+		    opacity: 1!important;
+		    width: 100%;
+		    font-size: 12px;
+		    border: 0px;
+		    padding-left: 10px;
+		}
+		.message {
+		    opacity: .1
+		}
+    </style>
+    
+    <!-- Apex Form -->
+    <apex:form id="form">
+        
+        <div class="slds">
+            
+            <!-- Action Function -->
+            <apex:actionFunction name="editRuleAsg" action="{!editRuleAssignment}" reRender="pb,pb2" status="waitMsg">
+                <apex:param value=""  name="ruleIdEdit"/> 
+            </apex:actionFunction>
+            
+            <apex:actionFunction name="deleteRuleAsg" action="{!deleteRuleAssignment}"  reRender="pb,pb2" status="waitMsg">
+                <apex:param value=""  name="ruleIdDelete"/> 
+            </apex:actionFunction>
+            
+            <apex:actionFunction name="showPopUP" action="{!fetchRelatedRecords}" reRender="selectDivData" oncomplete="showSplitPopup();">
+                <apex:param value=""  name="filterField" assignTo="{!selectedCriteriaFromButton}"/>
+                <apex:param value=""  name="rowNum" assignTo="{!selectedRowNum}"/>
+            </apex:actionFunction>
+            
+            <apex:actionFunction name="search" action="{!searchRecords}" reRender="selectDivData" status="waitMsg"/>
+            <apex:actionFunction name="addToSelection" action="{!OpportunityTypeSelectClick}" reRender="selectDivData" />
+            <apex:actionFunction name="addAdditionalSearchValues" action="{!addAdditionalSearchValues}" reRender="selectDivData"/>
+            <apex:actionFunction name="RemoveFromSelection" action="{!OpportunityTypeUnSelectClick}" reRender="selectDivData" />
+            <apex:actionFunction name="RemoveAdditionalSearchValues" action="{!OpportunityTypeUnSelectClick}" reRender="selectDivData" />
+                               
+            <apex:outputPanel id="pb">
+                
+                <!-- Page Message -->
+                <apex:PageMessages />
+                
+                <!--Block section to select rule and enter rule name --> 
+                <apex:outputPanel id="pbs1">
+                    <div class="container slds-p-around--medium">
+                        <div class="slds-section-title--divider">
+                            Rule Definition
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-form--horizontal">
+                        <div class="slds-col slds-col--padded"> 
+                            
+                            <!-- Rule Assignment -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Rule Assignment Name </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleclass="slds-input inputElement" value="{!ruleAssignment1.Name}" required="false"/>
+                                </div>
+                            </div>
+                            
+                            <!-- Rule -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > RevRecRule </label>
+                                <div class="slds-form-element__control">
+                                    <div class="inputLookupElement">
+                                    	<c:LookUpCompoment SObject="{!ruleAssignment1}" Field="AppRopozSLN__RevRecRule__c"></c:LookUpCompoment> 
+                               		</div>
+                                </div>
+                            </div>
+                            
+					       <div class="slds-form-element" style="width:38%;">
+					          <label class="slds-checkbox">
+					           <span class="slds-form-element__label">Active</span>
+					                <apex:inputcheckbox styleclass="slds-input slds-form-element_control" value="{!ruleAssignment1.Active__c}" />
+					                <span class="slds-checkbox--faux"></span>
+					                  
+					          </label>
+					       </div>
+                            
+                            <!-- Rule -->	
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Details </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleclass="slds-textarea inputElement" value="{!ruleAssignment1.Details__c}" required="false"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+                <!-- Section to select rule and enter rule name -->
+                <apex:outputPanel id="pbs2">
+                    <div class="container slds-p-around--medium">
+                        <div class="slds-section-title--divider">
+                            Filter Options
+                        </div>
+                        
+                        <!-- Section -->
+                        <apex:outputPanel id="pt1" > 
+                            <div class="slds-scrollable--x">
+                                <table class="slds-table slds-table--bordered slds-table--cell-buffer">                            
+                                    <tbody>
+                                        <apex:repeat value="{!ruleAssignmentWrapper}" var="wrap" id="theRepeat">
+                                            <tr>
+                                                <td scope="col">
+                                                    <div class="slds-truncate">
+                                                        <apex:SelectList styleClass="slds-select" Multiselect="false" size="1" value="{!wrap.ruleAssignmentCriteria.Criteria_Field__c}" id="selList">
+                                                            <apex:actionSupport event="onchange" action="{!onChangeCriteria}" rerender="pb" status="waitMsg"> 
+                                                                <apex:param name="rowCount" value="{!wrap.rowNum}"/> 
+                                                             </apex:actionSupport> 
+                                                             <apex:selectOptions value="{!wrap.selectCriterias}"/>
+                                                        </apex:SelectList>
+                                                    </div>
+                                                </td>
+                                                <td scope="col">
+                                                    <div class="slds-truncate">
+                                                    	<apex:SelectList styleClass="slds-select" Multiselect="false" size="1" value="{!wrap.ruleAssignmentCriteria.Operator__c}">
+                                                        	<apex:actionSupport event="onchange" action="{!operatorValueChange}" rerender="pb" status="waitMsg">    
+                                                            </apex:actionSupport> 
+                                                            <apex:selectOptions value="{!wrap.selectOperators}"/>
+                                                        </apex:SelectList>
+                                                    </div>
+                                                </td>
+                                                <td scope="col">
+                                                    <div class="slds-truncate">
+                                                        <apex:inputField styleClass="slds-input" html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Opportunity_Name__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Name'  || wrap.ruleAssignmentCriteria.Criteria_Field__c == 'None' }"/>
+                                                        <apex:inputField styleClass="slds-input" html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Product_Family__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Family'}"/>
+                                                        <apex:inputField styleClass="slds-input" html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Product_Name__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Product Name'}"/>
+                                                    </div>
+                                                </td>
+                                                <td scope="col">
+                                                    <div class="slds-truncate">
+                                                    	<input class="btn slds-button slds-button--neutral" type="button" value="Select Values..." onclick="showPopup('{!JSENCODE(wrap.ruleAssignmentCriteria.Criteria_Field__c)}' , '{!JSENCODE(wrap.ruleAssignmentCriteria.Operator__c)}' , '{!JSENCODE(TEXT(wrap.rowNum))}');" />
+                                                    	AND
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat> 
+                                    </tbody>
+                                </table>
+                            </div>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+                
+                <!-- Buttons -->
+                <div class="slds-grid slds-grid--align-center">
+                    <div class="slds-col">
+                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Save" action="{!saveRuleAssinment}"  reRender="pb2, pb" status="waitMsg"/>
+                		<apex:commandButton styleClass="btn slds-button slds-button--neutral" value="New" action="{!inIt}" reRender="pb2, pb" status="waitMsg"/>  
+                        <!-- <input class="btn slds-button slds-button--neutral" value="Cancel" type="button" onclick=""window.location('/apex/RevRecConfig');"/>-->
+                    </div>
+                </div>
+            </apex:outputPanel><br/>
+            
+            <!-- Page Block section -->
+            <apex:outputPanel id="pb2" > 
+                <div class="slds-page-header" role="banner">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-col--padded">
+                            <h1 class="slds-text-heading--medium slds-p-top-medium">Viewing Revenue Recognition Rule Assignments
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Buttons -->
+                <apex:outputPanel rendered="{!ruleAssignmentRecordsWrapper.size >0}">
+                    <div class="slds-grid slds-grid--align-center">
+                        <div class="slds-col">
+                            <apex:commandbutton styleClass="btn slds-button slds-button--neutral" value="Delete selected" action="{!deleteSelected}" reRender="pb, pb2" status="waitMsg"/>
+                        </div>
+                    </div> <br/>
+                </apex:outputPanel>
+                
+                <!-- Page Block section -->
+                <apex:outputPanel id="pt2" rendered="{!ruleAssignmentRecordsWrapper.size >0}"> 
+                    <div class="slds-scrollable--x">
+                        <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                            <thead>
+                                 <tr class="slds-text-title--caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate">
+                                        	<div class="slds-form-element" >
+									        	<label class="slds-checkbox">
+									                <apex:inputCheckbox styleclass="slds-input slds-form-element_control"  onClick="checkAll(this, '{!ruleAssignmentRecordsWrapper.size}');" id="headerCheck" />
+									                <span class="slds-checkbox--faux" id="myCheck"></span>
+									          </label>
+									       </div> 
+                                        </div>
+                                        
+                                    </th> 
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Rule Assignment Name4">
+                                        	Rule Assignment Name
+                                        </div>
+                                    </th>                                           
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                        	Opportunity Name
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product Family">
+                                        	Product Family
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product Family">
+                                        	Product Name
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product Family">
+                                        	Active
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product Family">
+                                        	RevRecRule
+                                        </div>
+                                    </th>
+                                     <th></th>
+                                </tr>   
+                            </thead>                            
+                            <tbody>
+                                <apex:repeat value="{!ruleAssignmentRecordsWrapper}" var="ruleAsg" id="theRepeat1">
+                                    <tr>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            
+                                            	  <div class="slds-form-element" >
+											          <label class="slds-checkbox">
+											                <apex:inputcheckbox styleclass="slds-input slds-form-element_control" id="myNewChk" value="{!ruleAsg.isSelected}" />
+											                <span class="slds-checkbox--faux" id="myCheck"></span>
+											          </label>
+											       </div> 
+                                            	<!-- <apex:inputcheckbox styleclass="slds-checkbox"  id="checkbox"/>-->
+                                        	</div>
+                                        </td> 
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<a onclick="editRuleAsg('{!ruleAsg.rule.Id}');" target="_blank" style="cursor:pointer;">{!ruleAsg.rule.Name}</a>
+                                            </div>
+                                        </td>                                           
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<apex:outputText value="{!ruleAsg.rule.Opportunity_Name__c}"/>
+                                            </div>
+                                        </td>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<apex:outputText value="{!ruleAsg.rule.Product_Family__c}"/>
+                                            </div>
+                                        </td>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<apex:outputText value="{!ruleAsg.rule.Product_Name__c}"/>
+                                            </div>
+                                        </td>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<apex:outputText value="{!ruleAsg.rule.Active__c}"/>
+                                            </div>
+                                        </td>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            	<a href="/apex/AppRopozSLN__RevRecConfig?editRuleId={!ruleAsg.rule.RevRecRule__c}" target="_self">{!ruleAsg.rule.RevRecRule__r.Name}</a>
+                                            </div>
+                                        </td>
+                                        <td scope="col">
+                                            <div class="slds-truncate">
+                                            <input class="btn slds-button slds-button--neutral" type="button" value=" Edit " onclick="editRuleAsg('{!ruleAsg.rule.Id}');"/>          
+                                            <input class="btn slds-button slds-button--neutral" type="button" value="Delete" onclick="deleteRuleAsg('{!ruleAsg.rule.Id}');"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </apex:repeat> 
+                            </tbody>
+                        </table>
+                    </div>
+                </apex:outputPanel> 
+                <apex:outputpanel rendered="{!ruleAssignmentRecordsWrapper.size = 0}">
+                    <br/><div class="slds-notify slds-notify--alert slds-theme--inverse-text slds-theme--alert-texture" role="alert">
+                    	<apex:outputlabel value="No Records to display." ></apex:outputlabel>
+                    </div>
+                </apex:outputpanel>
+            </apex:outputPanel> 
+        
+            <!--Select list with image -->
+            <div id="blockUIDiv" style="display:none;" class="modal-backdrop">
+                <apex:outputpanel id="splitDiv" layout="block" style="display:none;background-color:#F8F8F8;" styleClass="modalPopUpClass"> 
+                    <apex:outputpanel layout="block" style="background-color:#F8F8F8;" id="selectDivData">
+                        <span>
+                            <b>Instruction</b> <br/>
+                            1. To Select items , hightlight records in the Available list and click on the "Add to Selection" button to move into the selected list.<br/>
+                            2. To remove items ,hightlight records in the Selected list and click on the "Remove from Selection" button to remove it from the selected list.
+                            <br/>
+                        </span><br/>
+                        <div >
+                            <div class="slds-grid">
+                                <div class="slds-col slds-col--padded">
+                                    <apex:pageMessage summary="{!infoMsg}" severity="INFO" strength="3" id="msg" rendered="{!infoMsg != ''}"/>
+                                    <apex:outputpanel >
+                                        <apex:inputText styleClass="slds-input inputElement" html-placeholder="Search..." value="{!searchString}"/>
+                                        <!-- Buttons -->
+                                        <input class="btn slds-button slds-button--neutral" value="Search" type="button" onclick="search();"/>
+                                    </apex:outputpanel>
+                                </div>
+                            </div>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-col--padded">
+                                    <apex:outputText >
+                                        Choose one or more items below.
+                                    </apex:outputText>
+                                </div>
+                                <div class="slds-col slds-col--padded">
+                                    <apex:outputText >
+                                        Enter other values, like Acme*, to match all <br/>
+                                        records that begin with Acme
+                                    </apex:outputText>
+                                </div>
+                            </div>
+                            <div> 
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <div class="container slds-p-around--medium">
+                                            <div class="slds-section-title--divider">Availalable Item
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <div class="container slds-p-around--medium">
+                                            <div class="slds-section-title--divider">Enter Additional Search Values
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <apex:SelectList styleClass="slds-select selectList" Multiselect="true" size="5" value="{!leftOpportunityTypeSelected}" rendered="{!opportunitySelectList.size >0}">
+                                            <apex:selectOptions value="{!opportunitySelectList}"/>
+                                        </apex:SelectList>
+                                        <apex:outputText Value="No any record to display." rendered="{!opportunitySelectList.size = 0}"/>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <apex:inputText styleClass="slds-input inputElement" value="{!additionalSearchText}"/> 
+                                    </div>
+                                </div>
+                                <!-- Buttons -->
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <input class="btn slds-button slds-button--neutral" value="Add to Selection" type="button" onclick="addToSelection();"/>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <input class="btn slds-button slds-button--neutral" value="Add additional search values" type="button" onclick="addAdditionalSearchValues();"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <div class="container slds-p-around--medium">
+                                            <div class="slds-section-title--divider">Selected Item
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <div class="container slds-p-around--medium">
+                                            <div class="slds-section-title--divider">Additional Search Values
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <apex:SelectList styleClass="slds-select selectList" Multiselect="true" size="5" value="{!rightOpportunityTypeSelected}">
+                                            <apex:selectOptions value="{!itemSeletedOppList}"/>
+                                        </apex:SelectList>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <apex:outputText value="{!additionalSearchText}" />
+                                    </div>
+                                </div>
+                                <!-- Buttons -->
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-col--padded">
+                                        <input class="btn slds-button slds-button--neutral" value="Remove from Selection" type="button" onclick="RemoveFromSelection();"/>
+                                    </div>
+                                    <div class="slds-col slds-col--padded">
+                                        <input class="btn slds-button slds-button--neutral" value="Remove additional search values" type="button" onclick="RemoveAdditionalSearchValues();"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="slds-grid">
+                                        <div class="slds-col slds-col--padded">
+                                            <div class="container slds-p-around--medium">
+                                                <div class="slds-section-title--divider">Selected Search Values
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div><apex:inputTextArea styleClass="slds-textarea selectList" value="{!selectedSearchVal}"/>
+                                </div>
+                                    <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Save" action="{!saveSelectedRecords}" reRender="pb, pb2" oncomplete="closePopUp();" status="waitMsg"/>
+                                    <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Cancel" onclick="closePopUp();" reRender="pb, pb2"/>
+                                    <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Back" onclick="closePopUp();" reRender="pb, pb2"/>
+                                 </div>
+                            </div>
+                    </apex:outputpanel>
+                </apex:outputpanel>
+            </div>
+        	
+            <!-- Outpanel to show block UI -->
+            <apex:outputpanel >
+                <apex:actionstatus id="waitMsg">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height: 100%; background: rgba(0, 0, 0, 0.5); width: 100%;position:fixed;top:0px;">
+                            <div class="waitingHolder" style="height:40px; width: 150px; z-index: 100000;margin:0 auto;position:fixed;left:50%;top:50%; margin:-75px 0 0 -135px;border-radius: 5px;background:#ECECE3;padding:10px;text-align: center;vertical-align: middle;border: 1px solid #97CAFF;-moz-box-shadow: 3px 3px 4px #000;-webkit-box-shadow: 3px 3px 4px #000;box-shadow: 3px 3px 4px #000;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." /> 
+                                <span class="waitingDescription" style="color:black;">
+                                    Please Wait...
+                                </span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel> 
+         </div>  
+    </apex:form>
+</apex:page>

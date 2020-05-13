@@ -1,0 +1,1093 @@
+<apex:page controller="RevRecProductRuleController" id="page" sidebar="false" showHeader="false">
+    
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <apex:includeScript value="{!URLFOR($Resource.Resource, 'jquery/jquery.min.js')}"/>
+    <apex:includescript value="{!URLFOR($Resource.RevViewResources,'JS/RevProductRule.js')}"/> 
+    <apex:stylesheet value="{!URLFOR($Resource.RevViewResources,'CSS/productRuleCSS.css')}"/>
+    
+    <script type="text/javascript">  
+        window.onload = setFocus();
+        $.noConflict();
+        
+        function checkedSelectRadio2AmountQtyfrom1() {
+            if(document.getElementById("page:form:detailSession:pbs2:selectr1:0").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr3:0").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:0").checked = true;
+            } else { 
+                document.getElementById("page:form:detailSession:pbs2:selectr2:0").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:0").checked = false;
+            }  
+
+            if(document.getElementById("page:form:detailSession:pbs2:selectr1:1").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr2:1").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:1").checked = true;
+            } else {
+                document.getElementById("page:form:detailSession:pbs2:selectr2:1").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:1").checked = false;
+            }
+            
+            if(document.getElementById("page:form:detailSession:pbs2:selectr1:2").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr2:2").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:2").checked = true;
+            } else {
+                document.getElementById("page:form:detailSession:pbs2:selectr2:2").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:2").checked = false;
+            }
+        } 
+        function checkedSelectRadio1AmountQtyfrom2() { console.log (2);
+            if(document.getElementById("page:form:detailSession:pbs2:selectr2:0").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:0").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:0").checked = true;
+            }else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:0").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:0").checked = false;
+            }
+            
+            if(document.getElementById("page:form:detailSession:pbs2:selectr2:1").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:1").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:1").checked = true;
+            }else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:1").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:1").checked = false;
+            }
+            
+            if(document.getElementById("page:form:detailSession:pbs2:selectr2:2").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:2").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:2").checked = true;
+            }else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:2").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr3:2").checked = false;
+            }
+        }
+        function checkedSelectRadio1AmountQtyfrom3() { console.log (3);
+            if(document.getElementById("page:form:detailSession:pbs2:selectr3:0").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:0").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:0").checked = true;
+            } else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:0").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:0").checked = false;
+            }
+            
+            if(document.getElementById("page:form:detailSession:pbs2:selectr3:1").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:1").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:1").checked = true;
+            } else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:1").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:1").checked = false;
+            }
+            
+            if(document.getElementById("page:form:detailSession:pbs2:selectr3:2").checked) {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:2").checked = true;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:2").checked = true;
+            } else {
+                document.getElementById("page:form:detailSession:pbs2:selectr1:2").checked = false;
+                document.getElementById("page:form:detailSession:pbs2:selectr2:2").checked = false;
+            }
+        }
+    </script>
+    
+     <style>
+        .dateFormat {    
+            display : none;
+        }
+        .rt{text-align:right;}
+        .bPageBlock .detailList .data2Col {
+            width:0;
+            text-align:right;
+            vertical-align:middle;
+            border-bottom: 1px solid #e3deb8;
+            border-top: 0;
+        }
+        .apexp .detailList .list td {
+            border-right: 0px;
+            border-left: 0px;
+            border-bottom: 1px solid #e3deb8;
+        }
+        .apexp .detailList .list tr:hover {
+            background-color: #e3f3ff;
+        }
+         .rt {
+            line-height: 14px;
+          border-bottom: 2px solid #ccc;
+          font-size: .9em;
+        }
+        rect[Attributes Style] {
+            height: 128;
+            width: 9;
+            x: 193;
+            y: 162;
+            stroke-width: 0px;
+            stroke: rgb(11, 111, 206);
+            ry: 0;
+            rx: 0;
+            transform: matrix(1, 0, 0, 1, 0, 0);
+        }
+    </style>
+    
+    <!-- Page Message -->
+    <apex:pageMessages id="msg"/> 
+    
+    <!-- Apex Form -->
+    <apex:form id="form">
+        
+        <a id="detailAnchor">&nbsp;</a> 
+        <input id="hiddenElement" type="hidden" />      
+        <apex:inputHidden value="{!indexString}" id="indexStringId"/>                    
+      
+        <!-- Action functions for Milstone , AM and Blended Rule -->
+        <apex:actionFunction name="saveMiles" action="{!saveMilesOnBlur}" rerender="rd1,rd2,rd3,rdp1,rdp2,rdp3" status="waitMsg"/>
+        <apex:actionFunction name="saveAMMiles" action="{!saveAMMilesOnBlur}" rerender="rd6,rd7" status="waitMsg"/>
+        <apex:actionFunction name="removeCat" action="{!removeCategory}" rerender="blendedRevDetail" status="waitMsg"/>
+        <apex:actionFunction name="addCat" action="{!addCategory}" rerender="blendedRevDetail" status="waitMsg"/>
+        <apex:actionFunction name="removeMile" action="{!removeMilestone}" rerender="milestoneDetail" status="waitMsg"/>
+        <apex:actionFunction name="addMile" action="{!addMilestone}" rerender="milestoneDetail" status="waitMsg"/>
+
+         <!-- Action functions - Added as per split functionality -->
+         <apex:actionFunction name="saveSplitsMethod" action="{!saveSplits}" rerender="splitDivData" status="waitMsg" onComplete="blankMethod();"/>
+         <apex:actionFunction name="blankMethod" action="{!blankMethod}" rerender="blendedRevDetail" status="waitMsg" onComplete="closePopUp();"/> 
+         <apex:actionFunction name="doSplit" action="{!doSplitCategories}" rerender="splitDivData,blend" status="waitMsg" onComplete="showSplitPopup('{!lineItemRow}');">
+            <apex:param value=""  assignTo="{!categoryToBeSplit}" name="abc"/> 
+            <apex:param value=""  assignTo="{!typeOfCategoryScreen}" name="xyz"/> 
+            <apex:param value=""  assignTo="{!categoryParentId}" name="bbb"/> 
+         </apex:actionFunction> 
+         <apex:actionFunction name="removeSplitCat" action="{!removeCategoryForSplit}" rerender="splitDivData" status="waitMsg"/>
+         <apex:actionFunction name="addSplitCat" action="{!addCategoryForSplit}" rerender="splitDivData" status="waitMsg"/>
+         
+         <!-- Code added - 30 March 2016 - BUG FIX 23 -->
+         <apex:actionFunction name="saveAllRules" action="{!save}"/>
+         
+        <!--  Page Block -->
+        <apex:pageBlock title="Edit overridden rule" mode="edit"  id="detailSession">
+            
+            <!-- Button section -->
+            <apex:pageBlockButtons location="top" >  
+                <input type="button" style="margin-left:21%;" class="btn" onClick="saveRule('{!listCategoryWrap.size}', '{!JSENCODE(Record.Recognition_Type__c)}');" value="Save" />
+                <apex:commandButton style="margin-left:1%;" action="{!cancel}" value="Cancel"/>
+            </apex:pageBlockButtons>
+         </apex:pageBlock>
+                
+            <apex:pageBlock title="Assigned Rule Information" id="pbs">
+                <!-- Header to be added same as the schedule page-->
+                <table width="1000px">
+                    <tr>
+                        <td rowspan="2"><img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" /> <br/>
+                            Revenue Recognition -- {!Opportunity.Name} 
+                        </td>
+                        <td>
+                            <apex:outputlabel >Total</apex:outputlabel>
+                        </td>
+                        <td>
+                            <apex:outputlabel >Recognized</apex:outputlabel>
+                        </td>
+                        <td>
+                            <apex:outputlabel >Deferred</apex:outputlabel>
+                        </td>
+                        <td>
+                            <apex:outputlabel >Residual</apex:outputlabel>
+                        </td>
+                    </tr>  
+                    <tr>
+	                    <td>
+	                        <b>
+	                            <apex:outputText value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">      
+	                                <apex:param value="{!lineItem.TotalPrice}" />
+	                            </apex:outputText> <br/>
+	                            <apex:outputText value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">      
+	                                <apex:param value="{!oppTotalAmountWei}" />
+	                            </apex:outputText>
+	                        </b> 
+	                        <b><apex:outputText value="{!oppLineTotalOpportunity}" rendered="{!isMultiCurrencyEnabled}" /><br/>
+	                       		<apex:outputText style="color:green;" value="{!oppLineTotalOpportunityWei}" rendered="{!isMultiCurrencyEnabled}" />
+	                       	</b>
+	                        <span style="color:#f48c42;">(Weighted)</span>
+	                    </td>
+	                    <td>
+	                        <b>
+	                            <apex:outputText value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">
+	                                <apex:param value="{!revRecLineItem.RecognizedRev__c}"/>
+	                            </apex:outputText><br/>
+	                        </b>  
+	                        <b><apex:outputText value="{!revRecOppTotalRecognized}" rendered="{!isMultiCurrencyEnabled}" /><br/>
+	                        </b>
+	                    </td>
+	                    
+	                    <td>
+	                        <b>
+	                            <apex:outputText value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">
+	                                <apex:param value="{!revRecLineItem.DeferredRev__c}" />
+	                            </apex:outputText><br/>
+	                        </b> 
+	                        <b><apex:outputText value="{!revRecOppTotalDeferred}" rendered="{!isMultiCurrencyEnabled}" /><br/>
+	                        </b>
+	                    </td>
+	                    <td>
+	                        <b> 
+	                            <apex:outputText value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">
+	                                <apex:param value="{!revRecLineItem.ResidualAmount__c}"/>
+	                            </apex:outputText><br/>
+	                            <apex:outputText style="color:green;" value="{!userCurrencyIsoCode}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">
+	                                <apex:param value="{!revRecLineItem.ResAmtWei__c}"/>
+	                            </apex:outputText>
+	                        </b> 
+	                        <b><apex:outputText value="{!revRecOppTotalResidual}" rendered="{!isMultiCurrencyEnabled}" /><br/>
+	                            <apex:outputText style="color:green;" value="{!revRecOppTotalResidualWei}" rendered="{!isMultiCurrencyEnabled}" />
+	                        </b> 
+	                        <span style="color:#f48c42;">(Weighted)</span> 
+	                    </td> 
+	                </tr>
+	                <tr> 
+	                    <td>Product:<b>{!lineItem.PricebookEntry.Name}</b></td> 
+	                    <td>Today:<b><apex:outputField value="{!opp.CloseDate}" /></b> </td>
+	                    <td>Date Calculated:<b><apex:outputField value="{!revRecLineItem.CalculatedAt__c}" /></b></td>
+	                    <td>Rule Used:<b> <a style="color: #0000FF;" href="{!URLFOR($Page.RevRecProductRule,null, [opportunityId=opportunityId,opportunityLineItemId=lineItem.Id] )} "> {!rule.Name}</a></b></td>
+	                    <td>Product Quantity: <b>{!lineItem.Quantity}</b></td>
+	                </tr>
+	                <tr><td>&nbsp;</td></tr>
+                </table>
+            </apex:pageBlock>
+                 
+            <!-- Page Block section to show override rule info  -->
+            <apex:pageBlock title="Overridden Rule" id="pbs2">     
+                    
+                <apex:outputPanel id="detail" style="overflow:auto;width:800px">
+                    
+                    <apex:outputpanel layout="block" rendered="{!showAmortizeDetail || showSingleTransDetail || showAmortizeMilestoneDetail}">
+                     
+                        <!--Code is added on 07/13/2016 FEATURE # 5: Amortization Start and End Date renaming on Override screen-->
+                        <apex:outputpanel rendered="{!showSingleTransDetail}">Transaction Date:&nbsp;</apex:outputpanel>
+                        <apex:outputpanel rendered="{!showAmortizeDetail}"> Amortize Start Date:&nbsp;</apex:outputpanel>
+                        <apex:outputpanel rendered="{!showAmortizeMilestoneDetail}"> Amortized milestone Start Date:&nbsp;</apex:outputpanel>
+                        <apex:inputField value="{!record.Start_Date__c}"  rendered="{!(defaultOverridden && showAmortizeMilestoneDetail) || showAmortizeDetail || showSingleTransDetail}"/>
+                        <apex:outputField value="{!record.Start_Date__c}"  rendered="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail)}"/>
+                        <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}"/><br/>&nbsp;<br/>
+                    </apex:outputpanel>
+                    
+                    <apex:outputpanel rendered="false">
+                        <apex:inputCheckbox value="{!showTotalPeriod}" > 
+                            <apex:actionSupport event="onchange" action="{!ChangeShowTotalPeriod}" rerender="periodOrEndDate" />
+                        </apex:inputCheckbox>Check to Base End Date by Total Period
+                    </apex:outputpanel>
+                    
+                    <apex:outputpanel layout="block" rendered="{!showAmortizeDetail || showAmortizeMilestoneDetail}"  id="periodOrEndDate" >
+                        <apex:outputpanel rendered="{!showTotalPeriod}" >
+                            Total Period:&nbsp; 
+                            <apex:inputField value="{!record.Total_Period__c}" />                    
+                        </apex:outputpanel>
+                        <apex:outputpanel rendered="{!(!showTotalPeriod)}" >
+                            
+                            <!--Code is added on 07/13/2016 FEATURE # 5: Amortization Start and End Date renaming on Override screen-->
+                            <apex:outputPanel rendered="{!showAmortizeDetail}">Amortize End Date:&nbsp;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!showAmortizeMilestoneDetail}">Amortized milestone End Date:&nbsp;</apex:outputPanel>
+                            <apex:inputField value="{!record.End_Date__c}" rendered="{!(defaultOverridden && showAmortizeMilestoneDetail) || showAmortizeDetail || showSingleTransDetail}"/>
+                            <apex:outputField value="{!record.End_Date__c}"  rendered="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail)}"/>
+                            <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}"/>
+                        </apex:outputpanel>
+                    </apex:outputpanel> &nbsp;<br/>
+                    
+                    <!-- Apex panel to show Milestone panel If rule type is "Milestone" -->
+                    <apex:outputPanel rendered="{!showMilestoneDetail}" id="milestoneDetail" layout="block"  style="border: 1pt solid gray;margin-left: -12px;padding: 10px;padding-top: 23px;width: 100%;" >
+                        <table cellspacing="0" width="96%" id="table1">
+                            <tr id="tr">
+                                <td ></td><td ></td>
+                                <td >Milestone Name</td>
+                                <td ><center><apex:outputText >Projected-Sales Revenue</apex:outputText></center>
+                                </td>  
+                                <td ><center> <apex:outputText >Actual Revenue</apex:outputText></center>
+                                </td>               
+                                <td align="right">Recognized Amount</td>
+                                <td align="right">Deferred Amount</td>
+                                <td Style="padding-left:15px;">Milestone Date</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                
+                                <td colspan="3" style="padding-left: 2%;">
+                                    <apex:selectRadio value="{!Record.Milestone_Type__c}" title="Select Milestone Type">
+                                    <!-- //--------------------- -->
+                                        <apex:actionSupport event="onclick" action="{!ChangeMilestoneTypeForAM}" rerender="milestoneDetail"/>    
+                                        <apex:selectOptions value="{!MilestoneOptions}"/>
+                                    </apex:selectRadio>
+                                </td>
+                            </tr>
+                            <apex:variable value="{!0}" var="indexVar"/>
+                            <apex:repeat value="{!RevRecProductRuleMilestones}" var="item" id="repet">           
+                                <tr>
+                                    <td deleteIndex="{!indexVar}" id="tds"><apex:inputCheckbox id="firstCheckbox" styleClass="isDelete"/></td>
+                                    <td><apex:outputField value="{!item.Milestone_Sequence__c}"/></td>
+                                    <td><apex:inputField value="{!item.Milestone_Name__c}"/></td>
+                                    <td>
+                                        <apex:inputField value="{!item.Projected_Percent__c}" id="rdp1" rendered="{!Record.Milestone_Type__c == 'percent'}" style="text-align: right;"  />
+                                        <apex:inputField value="{!item.Projected_Amount__c}"  id="rdp2" rendered="{!Record.Milestone_Type__c == 'amount'}" style="text-align: right;"  />
+                                        <apex:inputField value="{!item.Projected_Qty__c}"  id="rdp3" rendered="{!Record.Milestone_Type__c == 'qty'}" style="text-align: right;" />
+                                    </td>
+                                    <td><!-- Modified on 03/05/2018 -->
+                                        <apex:inputField value="{!item.Actual_Percent__c}" id="rd1" rendered="{!Record.Milestone_Type__c == 'percent'}" style="text-align: right;"  />
+                                        <apex:inputField value="{!item.Actual_Amount__c}"  id="rd2" rendered="{!Record.Milestone_Type__c == 'amount'}" style="text-align: right;"  />
+                                        <apex:inputField value="{!item.Actual_Qty__c}"  id="rd3" rendered="{!Record.Milestone_Type__c == 'qty'}" style="text-align: right;" />
+                                    </td>
+                                    
+                                    <!--Code modified - 01/30/2015 - Right align numbers  -->
+                                    <td style="border-left: 1px solid black;border-right: 1px solid black;text-align: right;width:15%;" id="td">
+                                        <apex:outPutText value="{!item.Actual_Amount__c}" rendered="{!item.Milestone_Date__c != null && item.Milestone_Date__c <= Today()}" id="amountRow"/>
+                                    </td>
+                                    
+                                    <!--Code modified - 02/03/2015 - Deferred amount  -->     
+                                    <td style="border-right: 1px solid black;text-align: right;width:15%;">      
+                                        <apex:outputlabel value="0.00" rendered="{!item.Milestone_Date__c != null && item.Milestone_Date__c <= Today()}"/>
+                                        <apex:outputlabel value="{!item.Actual_Amount__c}" rendered="{!(item.Milestone_Date__c != null && item.Milestone_Date__c > Today() 
+                                                                             )||(item.Milestone_Date_Source__c == 'MANUAL' && item.Milestone_Date__c == null)
+                                                                              || (item.Milestone_Date_Source__c != 'MANUAL' && item.Milestone_Date__c == null)}"/>
+                                    </td>     
+                                    <!--Code Added 01/19/2015 - As per Milestone Date Automation -->
+                                    <td style="padding-left:13px;width:14%;">
+                                        <apex:inputField value="{!item.Milestone_Date__c}" rendered="{!item.Milestone_Date_Source__c == 'MANUAL' || item.Milestone_Date_Source__c == ''}"/>
+                                        <apex:outputField Value="{!item.Milestone_Date__c}" rendered="{!item.Milestone_Date_Source__c != 'MANUAL' && item.Milestone_Date__c != null && item.Milestone_Date_Source__c != ''}" id="date" />
+                                        <apex:outputLabel value="(Auto)" rendered="{!item.Milestone_Date_Source__c != 'MANUAL' && item.Milestone_Date__c != null && item.Milestone_Date_Source__c != ''}" style="color:red;" id="dates"/>
+                                        <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}" rendered="{!item.Milestone_Date_Source__c == 'MANUAL' || item.Milestone_Date_Source__c == ''}"/>    
+                                    </td>
+                                     
+                                    <td>
+                                        <apex:selectList value="{!item.Milestone_Date_Source_Label__c}"  multiselect="false" size="1"
+                                                         style="width:90%; margin-left:20%;" title="Date Variable" rendered="{!item.Milestone_Date__c != null && item.Milestone_Date__c <= Today()}">
+                                            <apex:selectOption ItemValue="{!item.Milestone_Date_Source_Label__c}" ItemLabel="{!item.Milestone_Date_Source_Label__c}"/>  
+                                        </apex:selectList>
+                                        
+                                        <apex:selectList value="{!item.Milestone_Date_Source__c}"  multiselect="false" size="1"
+                                                         style="width:90%; margin-left:20%;" title="Date Variable" rendered="{!(item.Milestone_Date__c != null && item.Milestone_Date__c > Today())
+                                                                           ||(item.Milestone_Date_Source__c == 'MANUAL' && item.Milestone_Date__c == null)
+                                                                           || (item.Milestone_Date_Source__c != 'MANUAL' && item.Milestone_Date__c == null)}">
+                                            <apex:actionSupport event="onchange" action="{!ChangeMilestoneDateSource}" oncomplete="onLoadData();" rerender="milestoneDetail" /> 
+                                            <apex:selectOptions Value="{!StartAndEndDateOptions}"/>  
+                                        </apex:selectList>                                                                         
+                                    </td>     
+                                </tr>
+                                <apex:variable value="{!indexVar+1}" var="indexVar"/>
+                            </apex:repeat>  
+                            <tr>
+                                <td colspan = "4">
+                                    <apex:commandButton value="Add Row" action="{!addMilestone}" rerender="milestoneDetail" style="margin-left:-2px;" onClick="checkForDetele(); return checkSelected1('{!RevRecProductRuleMilestones.size}', '{!record.Recognition_Type__c}', '');"/>
+                                    <apex:commandButton value="Delete Row" action="{!removeMilestone}" rerender="milestoneDetail" style="margin-left:0px;" onClick="checkForDetele(); return checkSelected('{!RevRecProductRuleMilestones.size}', '{!record.Recognition_Type__c}','');"/>
+                                </td>  
+                                <td style="text-align: right;width:10%;">
+                                    <apex:outputLabel value="{!MilestoneTotal}"  rendered="{!RevRecProductRuleMilestones.size > 0}"/>              
+                                </td>
+                                <td style="text-align: right;">
+                                    <apex:outputpanel rendered="{!RevRecProductRuleMilestones.size > 0}">
+                                        <span style="margin-left:25px;">==================</span><br/>
+                                    </apex:outputpanel>
+                                    <apex:outputLabel value="{!MilestoneAmountTotal}"   rendered="{!RevRecProductRuleMilestones.size > 0}"/>     
+                                </td>                         
+                                <td style="text-align: right;">
+                                    <apex:outputpanel rendered="{!RevRecProductRuleMilestones.size > 0}">
+                                        <span style="margin-left:25px;">==================</span><br/>
+                                    </apex:outputpanel>
+                                    <apex:outputlabel value="{!MilestoneDeferredAmountTotal}"  rendered="{!RevRecProductRuleMilestones.size > 0}"/>
+                                </td>  
+                            </tr>                                   
+                        </table>
+                    </apex:outputPanel> 
+                    
+                    <!-- Table to show remaining amount and Qty -->
+                    <!--Add the "Remaining" values that are on the Blended Revenue override page to the Milestone override page-->
+                    <apex:outputPanel rendered="{!showMilestoneDetail}">  
+                        <table style="width:40%;margin-left:9%;"> 
+                            <tr>
+                                <td><b>Remaining Qty :</b>
+                                    <apex:outputText value="{!revRecLineItem.Remaining_Qty__c}"/>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td><b>Remaining Percentage :</b>
+                                    <apex:outputText value="{!revRecLineItem.Remaining_Percentage__c}"/>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td><b>Remaining Amount :</b>
+                                    <apex:outputText value="{!revRecLineItem.Remaining_Amount__c}"/>
+                                </td>
+                            </tr>
+                            
+                            <!-- Code added - 08/09/2016 Enhancement #3: Ability to adjust line item price/opportunity amount when changes to Actual Forecast is greater than the line item amount.-->
+                            <td>
+                                <apex:commandButton value="Adjust Product Pricing/Opportunity Amount" action="{!AdjustProductPricingOpportunityAmount}" rendered="{!isShowAdjuctAndPricingButton}"/>
+                            </td>
+                        </table>
+                    </apex:outputPanel>
+                    
+                    <!-- Output panel to show Amortize Rule detail --> 
+                    <apex:outputpanel rendered="{!showAmortizeDetail || showAmortizeMilestoneDetail || ShowBlendedRevenueRecognitionDetail}" layout="block"  >
+                        Period:&nbsp; 
+                        <apex:inputField value="{!record.Period__c}" rendered="{!(defaultOverridden && showAmortizeMilestoneDetail) || showAmortizeDetail || ShowBlendedRevenueRecognitionDetail}"> 
+	                        <apex:actionSupport event="onchange" action="{!ChangeRecognitionPeriod}" rerender="periodDetail" />
+                        </apex:inputField>
+                        <apex:outputField value="{!record.Period__c}" rendered="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail)}"/>
+                    </apex:outputpanel>
+                    
+                    <!-- Panel to show the detail about periods -->
+                    <apex:outputpanel id="periodDetail" >
+                        
+                        <apex:outputpanel rendered="{!(showAmortizeDetail || showAmortizeMilestoneDetail || ShowBlendedRevenueRecognitionDetail) && showDevideEvenlyDetail }">
+                            <apex:selectRadio value="{!record.Divide_By__c}"   layout="pageDirection" title="" disabled="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail)}">   
+                                <apex:actionSupport event="onclick" action="{!onChangeDivideByOption}" rerender="detailSession" />   
+                                <apex:selectOptions value="{!DividedByOptions}"/>
+                            </apex:selectRadio>  
+                        </apex:outputpanel> 
+                        
+                        <apex:outputPanel layout="block" style=" margin:5px;padding:30px;padding-top:2px;"> 
+                            
+                            <apex:outputpanel rendered="{!(showAmortizeDetail || showAmortizeMilestoneDetail || ShowBlendedRevenueRecognitionDetail) && showByPeriodOrExactDetail }">
+                                <apex:selectRadio value="{!record.Period_or_Exact_Days__c}"   layout="pageDirection" title="" disabled="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail)}">
+                                    <apex:actionSupport event="onclick" action="{!onChangeExactDaysOptions}" rerender="detailSession" />
+                                    <apex:selectOptions value="{!PeriodExactOptions}"/>
+                                </apex:selectRadio>             
+                            </apex:outputpanel>
+                            
+                            <!-- Editable -->
+                            <apex:outputPanel >
+                                <!-- This panel is used to hold the start and end percentage field If Percentage selected -->
+                                <apex:outputpanel rendered="{!record.Divide_By__c == 'Prorate' && (showAmortizeDetail || (defaultOverridden && showAmortizeMilestoneDetail) || ShowBlendedRevenueRecognitionDetail) && showByPeriodOrExactDetail}"  layout="block" style="margin-left:10px;">
+                                    Start Percentage&nbsp; &nbsp;
+                                    <apex:inputField value="{!record.Start_Percentage__c}" style="width:5%;"/><br/><br/>
+                                    End Percentage &nbsp; &nbsp;
+                                    <apex:inputField value="{!record.End_Percentage__c}" style="width:5%;"/>                                
+                                </apex:outputpanel>
+                                
+                                <apex:outputPanel rendered="{!showAmortizeDetail || (defaultOverridden && showAmortizeMilestoneDetail)}" layout="block"  style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;" >
+                                    Initial Value: <apex:inputField value="{!record.Initial_Amount__c}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Amount Type: <apex:inputField value="{!record.Initial_Amount_Type__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:inputField value="{!record.InitialComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                                   
+                                <apex:outputPanel rendered="{!showAmortizeDetail || (defaultOverridden && showAmortizeMilestoneDetail)}" layout="block"  style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;">
+                                    Offset Type: <apex:inputField value="{!record.Offset_Type__c}"/>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Offset Periods: <apex:inputField value="{!record.Offset_Period__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:inputField value="{!record.OffsetComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                                    
+                                <apex:outputPanel layout="block"  style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;" rendered="{!(defaultOverridden && showAmortizeMilestoneDetail) || showAmortizeDetail || showSingleTransDetail}">
+                                    Residual  Value: <apex:inputField value="{!record.Residual_Amount__c}"/>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Residual Type: <apex:inputField value="{!record.Residual_Amount_Type__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:inputField value="{!record.ResidualComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            
+                            <!-- Non - editable -->
+                            <apex:outputPanel rendered="{!(NOT(defaultOverridden) && showAmortizeMilestoneDetail) }">
+                            
+                                <apex:outputpanel rendered="{!record.Divide_By__c == 'Prorate' && showByPeriodOrExactDetail}"  layout="block" style="margin-left:10px;">
+                                    Start Percentage&nbsp; &nbsp;
+                                    <apex:outputField value="{!record.Start_Percentage__c}" style="width:5%;"/><br/><br/>
+                                    End Percentage &nbsp; &nbsp;
+                                    <apex:outputField value="{!record.End_Percentage__c}" style="width:5%;"/>                                
+                                </apex:outputpanel>
+                                
+                                <apex:outputPanel layout="block"  style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;" >
+                                    Initial Value: <apex:outputField value="{!record.Initial_Amount__c}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Amount Type: <apex:outputField value="{!record.Initial_Amount_Type__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:outputField value="{!record.InitialComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                                   
+                                <apex:outputPanel layout="block"  style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;">
+                                    Offset Type: <apex:outputField value="{!record.Offset_Type__c}"/>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Offset Periods: <apex:outputField value="{!record.Offset_Period__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:outputField value="{!record.OffsetComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                                    
+                                <apex:outputPanel layout="block" style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;">
+                                    Residual  Value: <apex:outputField value="{!record.Residual_Amount__c}"/>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    Residual Type: <apex:outputField value="{!record.Residual_Amount_Type__c}"/>
+                                    <br/>&nbsp;<br/>
+                                    Comments:&nbsp;&nbsp;<apex:outputField value="{!record.ResidualComments__c}" style="width:500px;vertical-align:top"/>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                        </apex:outputPanel> 
+                    </apex:outputpanel> 
+                </apex:outputPanel>
+                				
+				<apex:outputPanel rendered="{!showAmortizeMilestoneDetail}">
+									
+                	<apex:commandButton style="margin-left:45.5%;" value="Edit" action="{!onEditableMode}"/>
+                    <apex:commandButton style="margin-left:1%;" value="Save" action="{!save}" />
+                    <br/><br/>
+                    <center><apex:outputText value="{!errorMsg}" rendered="{!errVisibility}"/></center>
+                </apex:outputPanel>
+				
+                <!-- Code Added 10/31/2014 Amortize MileStone Section -->
+                <apex:outputPanel rendered="{!showAmortizeMilestoneDetail}" id="amortizeMilestoneDetail" layout="block" style="border: 1pt solid gray; margin:8px; padding:10px;padding-top:2px;" >
+                    <table id= "table" >
+                        <tr id= "tr">
+                            <td width="50px"></td>
+                            <td width="200px">
+                            	<apex:selectRadio id="selectr1" value="{!record.Milestone_Type__c}" title="Select Amortize By">
+                                   <apex:actionSupport event="onclick" action="{!ChangeMilestoneTypeForAM}" rerender="amortizeMilestoneDetail,testiD" > 
+                                   </apex:actionSupport>
+                               <apex:selectOptions value="{!AmortizeMilestoneOptions}" id="sOp1" />&nbsp;
+                               	   <span style="margin-left:32px;">Milestone Name</span>
+                               </apex:selectRadio>
+                            </td>
+                            <td width="300px" id="td1">
+                                    <span style="margin-left:32px;">(Auto Forecast)</span>
+                            </td>
+                            <td></td>
+                            <!-- Code added on 07/09/2016 -->
+                            <!-- Enhancement #2: Manual Forecast -->
+                            <!-- Code is updated on 10/24/2016 (Change Titles to Auto Forecast, Manual Forecast) -->
+                            
+                            <td width="300px" id="td3">
+                                <span style="margin-left:39px;">
+                                    <apex:outputText value="(Projected-Sales Forecast)" rendered="{!Record.Enable_Manual_Forecast__c}"></apex:outputText>
+                                </span>
+                            </td>
+                                
+                            <td width="300px" id="td2">
+                                <span style="margin-left:39px;">(Actual Amount)</span>
+                            </td>
+                            <td>Milestone Date</td>
+                        </tr>
+                        
+                        <!-- Repeat to draw milestones for Rule type = Milestone (Editable mode)-->
+                        <apex:repeat value="{!RevRecProductRuleMilestones}" var="item" rendered="{!editable}">
+                            <tr>
+                                <td><apex:outputField value="{!item.Milestone_Sequence__c}"/></td>
+                                <td><apex:outputField value="{!item.Milestone_Name__c}"/></td>
+                                <td>
+                                    <apex:outputField value="{!item.Percent__c}"  id="rdp4" rendered="{!Record.Milestone_Type__c == 'percent'}"  />
+                                    <apex:outputField value="{!item.Amount__c}"  id="rd4" rendered="{!Record.Milestone_Type__c == 'amount'}"  />
+                                    <apex:outputField value="{!item.Qty__c}"  id="rd5" rendered="{!Record.Milestone_Type__c == 'qty'}"  />
+                                </td>
+                                <td></td>
+                                
+                                <!-- Code added - 07/09/2016- Add field for Sales manual Amount and quantity -->
+                                <td>
+                                    <apex:inputField value="{!item.Projected_Percent__c}" id="rdp8" rendered="{!Record.Milestone_Type__c == 'percent' && Record.Enable_Manual_Forecast__c}" />
+                                    <apex:inputField value="{!item.Projected_Amount__c}" id="rd8" rendered="{!Record.Milestone_Type__c == 'amount' && Record.Enable_Manual_Forecast__c}" />
+                                    <apex:inputField value="{!item.Projected_Qty__c}"  id="rd9" rendered="{!Record.Milestone_Type__c == 'qty' && Record.Enable_Manual_Forecast__c}" />
+                                </td>
+                                <!-- Code added - 10/31/2014- Add field for Actual Amount and quantity -->
+                                <td>
+                                    <apex:inputField value="{!item.Actual_Percent__c}" id="rdp6" rendered="{!Record.Milestone_Type__c == 'percent'}" />
+                                    <apex:inputField value="{!item.Actual_Amount__c}" id="rd6" rendered="{!Record.Milestone_Type__c == 'amount'}" />
+                                    <apex:inputField value="{!item.Actual_Qty__c}"  id="rd7" rendered="{!Record.Milestone_Type__c == 'qty'}" />
+                                </td>
+                                <td>
+                                    <apex:inputField value="{!item.Milestone_Date__c}" />
+                                    <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}"/>
+                                </td>             
+                            </tr>
+                        </apex:repeat>  
+                        
+                        <!-- Repeat to draw milestones for Rule type = Milestone (non editable mode) -->
+                        <apex:repeat value="{!RevRecProductRuleMilestones}" var="item" rendered="{!NOT(editable)}">
+                            <tr>
+                                <td><apex:outputField value="{!item.Milestone_Sequence__c}"/></td>
+                                <td><apex:outputField value="{!item.Milestone_Name__c}"/></td>
+                                <td>
+                                    <apex:outputField value="{!item.Percent__c}"  id="rdp4" rendered="{!Record.Milestone_Type__c == 'percent'}"  />
+                                    <apex:outputField value="{!item.Amount__c}"  id="rd4" rendered="{!Record.Milestone_Type__c == 'amount'}"  />
+                                    <apex:outputField value="{!item.Qty__c}"  id="rd5" rendered="{!Record.Milestone_Type__c == 'qty'}"  />
+                                </td>
+                                <td></td>
+                                
+                                <!-- Code added - 07/09/2016- Add field for Sales manual Amount and quantity -->
+                                <td>
+                                    <apex:outputField value="{!item.Projected_Percent__c}" id="rdp8" rendered="{!Record.Milestone_Type__c == 'percent' && Record.Enable_Manual_Forecast__c}" />
+                                    <apex:outputField value="{!item.Projected_Amount__c}" id="rd8" rendered="{!Record.Milestone_Type__c == 'amount' && Record.Enable_Manual_Forecast__c}" />
+                                    <apex:outputField value="{!item.Projected_Qty__c}"  id="rd9" rendered="{!Record.Milestone_Type__c == 'qty' && Record.Enable_Manual_Forecast__c}" />
+                                </td>
+                                <!-- Code added - 10/31/2014- Add field for Actual Amount and quantity -->
+                                <td>
+                                    <apex:outputField value="{!item.Actual_Percent__c}" id="rdp6" rendered="{!Record.Milestone_Type__c == 'percent'}" />
+                                    <apex:outputField value="{!item.Actual_Amount__c}" id="rd6" rendered="{!Record.Milestone_Type__c == 'amount'}" />
+                                    <apex:outputField value="{!item.Actual_Qty__c}"  id="rd7" rendered="{!Record.Milestone_Type__c == 'qty'}" />
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!item.Milestone_Date__c}" />
+                                    <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}"/>
+                                </td>             
+                            </tr>
+                        </apex:repeat>  
+                        <tr>  
+                            <td colspan="5">
+                                
+                            </td>
+                            <!-- Code added - 01/30/2015 - add variance-->
+                            <td style=" text-align:left;">
+                                <apex:outputText value="{!MilestoneTotal}" /><br/>  
+                                <apex:outputText value="{!MilestoneActualTotal}" /><br/>   
+                                <b><apex:outputlabel value="Variance" /></b>
+                                <apex:outputlabel value="(Forecasted - Actual) = " />
+                                <apex:outputText value="{!Variance}" rendered="{!Variance != null && Variance >= 0.00}"/>
+                                <apex:outputText value="({!(Variance* (-1))})" rendered="{!Variance != null && Variance < 0.00}" style="color:red;"/> &nbsp;&nbsp;&nbsp;
+                            </td> 
+                        </tr>
+                        
+                        <!-- Code added - 07/07/2016 FEATURE # 3: Add Adjust Future Revenue button to Amortized Milestone override screen-->
+                        <tr>
+                            <td colspan = "3"></td>
+                            <td>
+                                <apex:commandButton value="Adjust Future Revenue" action="{!adjustFutureRevenue}" rendered="{!isShowAdjuctAndPricingButton}" />
+                            </td>
+                            
+                            <!-- Code added - 08/09/2016 Enhancement #3: Ability to adjust line item price/opportunity amount when changes to Actual Forecast is greater than the line item amount.-->
+                            <td>
+                                <apex:commandButton value="Adjust Product Pricing/Opportunity Amount" action="{!AdjustProductPricingOpportunityAmount}" rendered="{!isShowAdjuctAndPricingButton}"/>
+                            </td>
+                            
+                            <!-- Code added - 07/07/2016 Ability to Initializing Sales Forecast and Actual Forescast with 0 Values to Amortized Milestone override screen-->
+                            <td>
+                                <apex:commandButton value="Reset Projected-Sales & Actual Forecasts to '0'" action="{!initializSalesAndActualForecast}" rendered="{!Record.Forecast_With_Zero_Value__c}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>  
+                           
+                <!-- Code added - 06/13/2015- As per Blended Revenue Recognition Requirement -->
+                <apex:outputpanel id="blend">
+                    
+                    <apex:outputpanel rendered="{!ShowBlendedRevenueRecognitionDetail}" layout="block" style="padding-top:25px;">
+                        
+                        <!-- Table to show line Item's data -->
+                        <table style="margin-top: -3%;width: 50%;">
+                            <tr>
+                                <td><b>Original Line Item Amount : </b><span style="color:blue;font-weight:bold;">{!lineItem.TotalPrice}</span></td>
+                                <td><b>Original Line Item Quantity : </b><span style="color:blue;font-weight:bold;">{!lineItem.Quantity}</span></td>                                    
+                            </tr>
+                        </table> 
+                        
+                        <!-- Panel to draw RevRec Product Rule categories related to rule-->
+                        <apex:outputpanel layout="block" style="border: 1pt solid gray;max-width: 71%;overflow-x: auto;position:relative;padding: 10px;padding-top: 23px;width: 100%;" id="blendedRevDetail">
+                        
+                            <!-- Table -->
+                            <table width="100%" cellspacing="0" id="tableBlendedRev">
+                                        
+                                <!-- Header -->
+                                <thead> 
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate">
+                                                Select &nbsp;
+                                            </div>
+                                        </th>
+                                        <th>Sequence</th>
+                                        <th>Category Name</th>
+                                        <th>Sub Category</th>
+                                        <th>Revenue Type</th>
+                                        <th><center>Projected-Sales Revenue</center></th>
+                                        <th><center>Actual Revenue</center></th>
+                                        <th> <label > Line Item  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>
+                                        </th>
+                                        <th></th>
+                                        <th style="text-align: right;width:15%;">Recognized Amount</th>
+                                        <th style="text-align: right;width:15%;">Deferred Amount</th>
+                                       
+                                        <th>Actual Start Date</th>
+                                        <th style="padding-left:10px;">Revenue Recognition Start Date</th>
+                                        <th>Actual End Date</th>
+                                        <th style="padding-left:10px;">Revenue Recognition End Date</th>
+                                    </tr>
+                                </thead>
+                                
+                                <!-- Body -->
+                                <tbody style="overflow-y:scroll;">
+                                    
+                                    <!-- Repeat on Product categories -->
+                                    <apex:repeat value="{!listCategoryWrap}" var="item" id="repet1">     
+                                        <tr>
+                                            <td style="width:4px;">
+                                                <apex:inputcheckbox value="{!item.isSelected}" id="firstChkbox"/> 
+                                            </td>
+                                            <td style="padding-left: 10px;">
+                                                <apex:outPutText value="{!item.revRecProductCategory.Sequence__c}" />
+                                            </td>
+                                            <td>
+                                                <apex:inputField value="{!item.revRecProductCategory.Name}" style="width:112px;" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}" id="blndCatName"/>
+                                                <apex:outputlabel rendered="{!item.revRecProductCategory.Is_Split__c}">
+                                                    <b style="color:blue;"> ----Allocate---- </b>
+                                                </apex:outputlabel>
+                                             </td>
+                                             <td>
+                                                <apex:inputField value="{!item.revRecProductCategory.Sub_Category_support__c}" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                             </td>
+                                             <td>
+                                                <apex:selectList value="{!item.revRecProductCategory.Category_Type__c}" size="1" multiselect="false">
+                                                    <apex:actionSupport event="onchange" action="{!ChangeCategoryType}" rerender="blendedRevDetail" status="waitMsg"/>                                           
+                                                    <apex:selectOptions value="{!BlendedOptions}"/>
+                                                </apex:selectList>
+                                            </td> 
+                                            <td >
+                                                <apex:inputField value="{!item.revRecProductCategory.Projected_Amount__c}" id="catp1" rendered="{!item.revRecProductCategory.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                <apex:inputField value="{!item.revRecProductCategory.Projected_Qty__c}" id="catp2" rendered="{!item.revRecProductCategory.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                <apex:inputField value="{!item.revRecProductCategory.Projected_Percent__c}" id="catp3" rendered="{!NOT(item.revRecProductCategory.Category_Type__c = 'Amount' || item.revRecProductCategory.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                            </td>  
+                                            <td >
+                                                <apex:inputField value="{!item.revRecProductCategory.Amount__c}" id="cat1" rendered="{!item.revRecProductCategory.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                <apex:inputField value="{!item.revRecProductCategory.Qty__c}" id="cat2" rendered="{!item.revRecProductCategory.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                <apex:inputField value="{!item.revRecProductCategory.Percent__c}" id="cat3" rendered="{!NOT(item.revRecProductCategory.Category_Type__c = 'Amount' || item.revRecProductCategory.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                            </td>
+                                            
+                                            <td style="width:20%;">                 
+                                                <b> Of Line Item #</b>
+                                                 <apex:selectList value="{!item.revRecProductCategory.Line_Item__c}" Multiselect="false" size="1">                                                        
+                                                    <apex:selectOptions value="{!item.lineItemForBlended}" />
+                                                </apex:selectList> 
+                                            </td>   
+                                            
+                                            <!--  Split button - Added on - 09/24/2015 -->
+                                            <td style="text-align: right;width:15%;"> 
+                                                <input type="button" value="Allocate" onClick="doSplit('{!item.revRecProductCategory.sequence__c}' , 'Parent', '');" id="btnSplitParent" />
+                                            </td>
+                                            
+                                            <td style="border-right: 1px solid black;text-align: right;width:15%;"> 
+												<apex:outputText value="{0, number, 00.00}">
+											       <apex:param value="{!item.revRecProductCategory.Recognized_Amount__c}" />
+											 	</apex:outputText>
+                                                <!-- <apex:outputField value="{!item.revRecProductCategory.Recognized_Amount__c}" /> -->
+                                            </td>
+                                            
+                                            <td style="border-right: 1px solid black;text-align: right;width:15%;">
+                                            	<apex:outputText value="{0, number, 00.00}">
+											       <apex:param value="{!item.revRecProductCategory.Actual_Deferred__c}" />
+											 	</apex:outputText>
+                                                <!-- <apex:outputField value="{!item.revRecProductCategory.Actual_Deferred__c}" /> -->
+                                            </td>
+                                            
+                                            <td style="padding-left:10px;"> 
+                                                <apex:inputField value="{!item.revRecProductCategory.Actual_Start_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_Start_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/> 
+                                                <apex:outputField value="{!item.revRecProductCategory.Actual_Start_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_Start_Date__c != 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}" rendered="{!item.revRecProductCategory.Category_Start_Date__c == 'MANUAL' } && NOT(item.revRecProductCategory.Is_Split__c)" />
+                                            </td>
+                                            
+                                            <td>
+                                                <apex:selectList value="{!item.revRecProductCategory.Category_Start_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}">
+                                                   <apex:actionSupport event="onchange" action="{!onChangeStartOptionsForBlended}" rerender="blendedRevDetail"  status="waitMsg"> 
+                                                       <apex:param value="{!item.rowCount}"  name="startRowNum"/>
+                                                   </apex:actionSupport>            
+                                                   <apex:selectOptions Value="{!StartDateSelectOptions}" />  
+                                                </apex:selectList> 
+                                            </td> 
+                                            
+                                            <td style="padding-left:10px;">
+                                                <apex:inputField value="{!item.revRecProductCategory.Actual_End_Date__c}" rendered="{!item.revRecProductCategory.Category_End_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/> 
+                                                <apex:outputField value="{!item.revRecProductCategory.Actual_End_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_End_Date__c != 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}" rendered="{!item.revRecProductCategory.Category_End_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                <apex:outputlabel rendered="{!item.revRecProductCategory.Is_Split__c}">
+                                                    <b style="color:blue;"> ----Allocate---- </b>
+                                                </apex:outputlabel>
+                                            </td>
+                                            
+                                            <td >
+                                                <apex:selectList value="{!item.revRecProductCategory.Category_End_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}">
+                                                    <apex:actionSupport event="onchange" action="{!onChangeEndOptionsForBlended}" rerender="blendedRevDetail"  status="waitMsg">
+                                                        <apex:param value="{!item.rowCount}" name="endRowNumber"/>
+                                                    </apex:actionSupport> 
+                                                    <apex:selectOptions Value="{!EndDateSelectOptions}" />  
+                                                 </apex:selectList>
+                                            </td> 
+                                        </tr>
+                                    </apex:repeat>
+                                    <tr>   
+                                        <td colspan = "5">  
+                                            &nbsp; 
+                                            <apex:commandButton value="Add Row"  rerender="blendedRevDetail" onclick="return checkSelected1('{!listCategoryWrap.size}', '{!record.Recognition_Type__c}' , '');"/> &nbsp;&nbsp;&nbsp;
+                                            <apex:commandButton value="Delete Row"  onclick="return checkSelected('{!listCategoryWrap.size}', '{!record.Recognition_Type__c}','');" rerender="blendedRevDetail" />   
+                                        </td>
+                                        <td colspan="4"></td>
+                                        <td style="text-align: right;">
+                                        
+                                            <apex:outputpanel rendered="{!listCategoryWrap.size > 0}">
+                                                <span style="margin-left:-1px;">==================</span><br/>
+                                            </apex:outputpanel>
+                                            
+                                            <b style="margin-left:-4px;">Recognized :</b> 
+                                            
+                                            <apex:outputText value="{0, number,0.00}" rendered="{!listCategoryWrap.size > 0}">
+                                                <apex:param value="{!totalRecognized}" />
+                                            </apex:outputText>     
+                                            
+                                        </td>                         
+                                        <td style="text-align: right;">
+                                            <apex:outputpanel rendered="{!listCategoryWrap.size > 0}" >
+                                                <span style="margin-left:-5px;">==================</span><br/>
+                                            </apex:outputpanel>
+                                            <b>Deferred : </b>
+                                            <apex:outputText value="{0, number,0.00}" rendered="{!listCategoryWrap.size > 0}">
+                                                <apex:param value="{!(totalDeferred)}" />
+                                            </apex:outputText>
+                                        </td>  
+                                    </tr> 
+                                </tbody>                                
+                            </table>
+                        </apex:outputpanel>
+                         
+                        <!-- Table to show remaining amount and Qty -->
+                        <!--Add the "Remaining" values that are on the Blended Revenue override page to the Milestone override page-->
+                        <apex:outputPanel rendered="{!ShowBlendedRevenueRecognitionDetail}">
+                            
+                            <table style="width:40%;margin-left:9%;"> 
+                                <tr>
+                                    <td><b>Remaining Qty :</b>
+                                        <apex:outputText value="{!revRecLineItem.Remaining_Qty__c}"/>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td><b>Remaining Percentage :</b>
+                                        <apex:outputText value="{!revRecLineItem.Remaining_Percentage__c}"/>
+                                    </td>
+                                    <td colspan="3">
+                                         <apex:commandButton value="Calculate"  action="{!calculateBlendedCategories}" rerender="blendedRevDetail, blend" status="waitMsg"/>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td><b>Remaining Amount :</b>
+                                        <apex:outputText value="{!revRecLineItem.Remaining_Amount__c}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                    </apex:outputpanel>
+                </apex:outputpanel>
+                
+                <!-- Added on 09/24/2015 - As per Blended Split functionality-->
+                <!-- This section is used to show the split functionality -->
+                <!-- Code added - 06/13/2015- As per Blended Revenue Recognition Requirement -->
+                <div id="blockUIDiv" style="display:none;" class="modal-backdrop"> </div>
+                    
+                    <apex:outputpanel id="splitDiv" layout="block" style="display:none;background-color:#F8F8F8;" styleClass="modalPopUpClass">  
+                        
+                        <apex:outputpanel layout="block" style="background-color:#F8F8F8;" id="splitDivData">
+                            
+                            <!-- Table to show Splitted category sequence number -->
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style=" background-color:#CFEEF8;height: 15px;color: black;font-weight: bold;padding: 5px;">
+                                    <b> Sub-Line Item #{!lineItemRow}</b>
+                                    </td>
+                                </tr>
+                            </table> 
+                                                         
+                            <!-- Table to show line Item's data -->
+                            <table style="width: 100%;margin-top:10px;">
+                                <tr>
+                                    <td><b>Original Sub Line Item Amount : </b><span style="color:blue;font-weight:bold;">{!originalLineItemAmount}</span></td>
+                                    <td><b>Original Sub Line Item Quantity : </b><span style="color:blue;font-weight:bold;">{!originalLineItemQty}</span></td>                                    
+                                </tr>
+                            </table> 
+                            
+                            <!-- Panel -->
+                            <apex:outputpanel layout="block" style="padding: 10px;padding-top: 23px;width:100%;border: 1pt solid gray;" id="blendedSplitRevDetail">
+                                
+                                <!-- Region -->
+                                <apex:actionRegion >
+                                 
+                                    <!-- Table -->
+                                    <table width="100%" cellspacing="0" id="tableBlendedRev1">
+                                        
+                                        <!-- Header -->
+                                        <thead>
+                                            <th>Select &nbsp;</th>
+                                            <th>Sequence</th>
+                                            <th>Category Name</th>
+                                            <th>Sub Category </th>
+                                            <th>Revenue Type</th>
+                                            <th>Projected-Sales Revenue</th>
+                                            <th>Actual Revenue</th>
+                                            <th> <label > Line Item  </label> </th>
+                                            <th></th>
+                                            <th>Recognized Amount</th>
+                                            <th>Deferred Amount</th>
+                                            <th>Actual Start Date</th>
+                                            <th style="padding-left:10px;">Revenue Recognition Start Date</th>
+                                            <th>Actual End Date</th>
+                                            <th style="padding-left:10px;">Revenue Recognition End Date</th>
+                                        </thead>
+                                         
+                                        <!-- Body -->
+                                        <tbody style="overflow-y:scroll;"> 
+                                            
+                                            <!-- Repeat on Product categories -->
+                                            <apex:repeat value="{!listSplitCategoryWrap}" var="item" id="repet2">     
+                                                <tr>
+                                                    <td style="width:4px;">
+                                                        <apex:inputcheckbox value="{!item.isSelected}" id="firstChkbox1"/> 
+                                                    </td>
+                                                    <td style="padding-left: 10px;">
+                                                        <apex:outPutText value="{!item.revRecProductCategory.Sequence__c}" />
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Name}" style="width:112px;" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                        <apex:outputlabel rendered="{!item.revRecProductCategory.Is_Split__c}">
+                                                            <b style="color:blue;"> ----Allocate---- </b>
+                                                        </apex:outputlabel>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Sub_Category_support__c}" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:selectList value="{!item.revRecProductCategory.Category_Type__c}" size="1" multiselect="false">
+                                                             <apex:actionSupport event="onchange" action="{!ChangeCategoryTypeForSplit}" rerender="blendedSplitRevDetail" status="waitMsg"/>   
+                                                            <apex:selectOptions value="{!BlendedOptions}"/>
+                                                        </apex:selectList>
+                                                    </td>   
+                                                    
+                                                    <td>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Projected_Amount__c}" id="catp11" rendered="{!item.revRecProductCategory.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Projected_Qty__c}" id="catp21" rendered="{!item.revRecProductCategory.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Projected_Percent__c}" id="catp31" rendered="{!NOT(item.revRecProductCategory.Category_Type__c = 'Amount' || item.revRecProductCategory.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                                    </td>
+                                                    
+                                                    <td>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Amount__c}" id="cat11" rendered="{!item.revRecProductCategory.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Qty__c}" id="cat21" rendered="{!item.revRecProductCategory.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                        <apex:inputField value="{!item.revRecProductCategory.Percent__c}" id="cat31" rendered="{!NOT(item.revRecProductCategory.Category_Type__c = 'Amount' || item.revRecProductCategory.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                                    </td>
+                                                    
+                                                    <td style="width:45%;">                 
+                                                        <b> Of Line Item #</b> 
+                                                         <apex:selectList value="{!item.revRecProductCategory.Line_Item__c}" Multiselect="false" size="1">                                                        
+                                                            <apex:selectOptions value="{!item.lineItemForBlended}" />
+                                                        </apex:selectList> 
+                                                     </td>  
+                                                     
+                                                     <!--  Split button - Added on - 09/24/2015 -->
+                                                     <td> 
+                                                        <input type="button" value="Allocate" onClick="doSplit('{!item.revRecProductCategory.sequence__c}' ,'Child', '{!item.revRecProductCategory.RevRecProductRuleSplitCategory__c}');" id="btnSplitParent" />
+                                                     </td>
+                                                    
+                                                     <td style="border-right: 1px solid black;text-align: right;width:15%;"> 
+                                                        <apex:outputField value="{!item.revRecProductCategory.Recognized_Amount__c}" />
+                                                     </td>
+                                                    
+                                                     <td style="border-right: 1px solid black;text-align: right;width:15%;">
+                                                        <apex:outputField value="{!item.revRecProductCategory.Actual_Deferred__c}" />
+                                                     </td>
+                                                    
+                                                     <td style="padding-left:10px;"> 
+                                                        <apex:inputField value="{!item.revRecProductCategory.Actual_Start_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_Start_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/> 
+                                                        <apex:outputField value="{!item.revRecProductCategory.Actual_Start_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_Start_Date__c != 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                        <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}" rendered="{!item.revRecProductCategory.Category_Start_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}" />
+                                                     </td>                                               
+                                                     <td>
+                                                        <apex:selectList value="{!item.revRecProductCategory.Category_Start_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}">
+                                                            <apex:actionSupport event="onchange" action="{!onChangeStartOptionsForSplitBlended}" rerender="blendedSplitRevDetail"  status="waitMsg"> 
+                                                                <apex:param value="{!item.rowCount}"  name="startRowNum"/>
+                                                            </apex:actionSupport>            
+                                                            <apex:selectOptions Value="{!StartDateSelectOptions}" />  
+                                                        </apex:selectList> 
+                                                     </td> 
+                                                     <td style="padding-left:10px;">
+                                                        <apex:inputField value="{!item.revRecProductCategory.Actual_End_Date__c}" rendered="{!item.revRecProductCategory.Category_End_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/> 
+                                                        <apex:outputField value="{!item.revRecProductCategory.Actual_End_Date__c}" style="margin-left:6px;" rendered="{!item.revRecProductCategory.Category_End_Date__c != 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                        <apex:image value="{!URLFOR($Resource.images, 'calender-icon.gif')}" rendered="{!item.revRecProductCategory.Category_End_Date__c == 'MANUAL' && NOT(item.revRecProductCategory.Is_Split__c)}"/>
+                                                        <apex:outputlabel rendered="{!item.revRecProductCategory.Is_Split__c}">
+                                                            <b style="color:blue;"> ----Allocate---- </b>
+                                                        </apex:outputlabel>
+                                                     </td>
+                                                
+                                                    <td >
+                                                        <apex:selectList value="{!item.revRecProductCategory.Category_End_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.revRecProductCategory.Is_Split__c)}">
+                                                            <apex:actionSupport event="onchange" action="{!onChangeEndOptionsForBlendedSplit}" rerender="blendedSplitRevDetail"  status="waitMsg">
+                                                                <apex:param value="{!item.rowCount}" name="endRowNumber"/>
+                                                            </apex:actionSupport> 
+                                                            <apex:selectOptions Value="{!EndDateSelectOptions}" />  
+                                                         </apex:selectList>
+                                                    </td> 
+                                                </tr>
+                                            </apex:repeat>
+                                            <tr>   
+                                                <td colspan = "4"> &nbsp; 
+                                                    <apex:commandButton value="Add Row"  rerender="blendedSplitRevDetail" onclick="return checkSelected1('{!listSplitCategoryWrap.size}', '{!record.Recognition_Type__c}', 'Split');"/> &nbsp;&nbsp;&nbsp;
+                                                    <apex:commandButton value="Delete Row"  onclick="return checkSelected('{!listSplitCategoryWrap.size}', '{!record.Recognition_Type__c}', 'Split');" rerender="blendedSplitRevDetail" />   
+                                                </td>
+                                                <td colspan="5"></td>
+                                                <td style="text-align: right;">
+                                                    <apex:outputpanel rendered="{!listSplitCategoryWrap.size > 0}">
+                                                        <span style="margin-left:-1px;">==================</span><br/>
+                                                    </apex:outputpanel>
+                                                    
+                                                    <b style="margin-left:-4px;">Recognized :</b> 
+                                                    <apex:outputText value="{0, number,0.00}" rendered="{!listSplitCategoryWrap.size > 0}" id="splitOp1">
+                                                        <apex:param value="{!totalSplitRecognized}" />
+                                                    </apex:outputText>     
+                                                </td>   
+                                                                      
+                                                <td style="text-align: right;">
+                                                    <apex:outputpanel rendered="{!listSplitCategoryWrap.size > 0}" >
+                                                        <span style="margin-left:-5px;">==================</span><br/>
+                                                    </apex:outputpanel>
+                                                        <b>Deferred : </b><apex:outputText value="{0, number,0.00}" rendered="{!listSplitCategoryWrap.size > 0}" id="splitOp2">
+                                                        <apex:param value="{!(totalSplitDeferred)}" />
+                                                    </apex:outputText>
+                                                </td>  
+                                            </tr> 
+                                        </tbody>                                
+                                    </table>
+                                </apex:actionRegion>
+                            </apex:outputpanel>   
+                            
+                            <!-- Table to show remaining amount and Qty -->
+                            <table style="width:40%;margin-left:9%;"> 
+                                <tr>
+                                    <td><b>Remaining Qty :</b>
+                                        <apex:outputText value="{!remainingSplitQty}" >
+                                        </apex:outputText> 
+                                     </td><br/>
+                                 </tr>
+                                <tr>
+                                    <td><b>Remaining Percentage :</b>
+                                        <apex:outputText value="{!remainingSplitPercent}" >
+                                        </apex:outputText> 
+                                    </td>   
+                                </tr>
+                                <tr>
+                                    <td><b>Remaining Amount :</b>
+                                        <apex:outputText value="{0, number, 0.00}">
+                                            <apex:param value="{!(remainingSplitAmount)}"/>
+                                        </apex:outputText> 
+                                    </td>   
+                                </tr>
+                            </table> 
+                            <center style="margin-top:10px;">
+                                <apex:commandButton onClick="saveSplitJS('{!listSplitCategoryWrap.size}', '{!originalLineItemAmount}');" value="Save" status="waitMsg"  reRender="splitDivData" />
+                                <apex:commandButton action="{!calculateSplit}" value="Calculate Splits" status="waitMsg" reRender="splitDivData"/>
+                                <apex:commandButton value="Cancel" status="waitMsg" onclick="closePopUp();" reRender="aa"/>
+                            </center>
+                            
+                        </apex:outputpanel>
+                    </apex:outputpanel> 
+              
+            <!-- Output panel to show block UI -->
+            <apex:outputpanel >
+                <apex:actionstatus id="waitMsg">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height: 100%; background: rgba(0, 0, 0, 0.5); width: 100%;position:fixed;top:0px;">
+                            <div class="waitingHolder" style="height:40px; width: 150px; z-index: 100000;margin:0 auto;position:fixed;left:50%;top:50%; margin:-75px 0 0 -135px;border-radius: 5px;background:#ECECE3;padding:10px;text-align: center;vertical-align: middle;border: 1px solid #97CAFF;-moz-box-shadow: 3px 3px 4px #000;-webkit-box-shadow: 3px 3px 4px #000;box-shadow: 3px 3px 4px #000;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." /> 
+                                <span class="waitingDescription" style="color:black;">
+                                       Please Wait...
+                                </span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel> 
+            
+        </apex:pageBlock>
+    </apex:form> 
+</apex:page>

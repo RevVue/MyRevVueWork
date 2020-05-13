@@ -1,0 +1,952 @@
+<apex:page standardController="Opportunity" extensions="RevRecOpportunityExtension" id="page" applyHtmlTag="false" showHeader="false" action="{!ReCalculateAll}" lightningStylesheets="true">
+    
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS0121, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <apex:includeScript value="{!URLFOR($Resource.Resource, 'jquery/jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.CustomAlert, 'jquery.alerts.js')}"/>
+    <!-- CSS -->
+    <style>
+        .columnWidth tr td, .columnWidth tr th{
+        width: 300px; 
+        }
+        .slds .slds-table th, .slds .slds-table td {
+        white-space: normal;
+        }
+        .center{text-align:center;}  
+        .modalPopUpClass { 
+        width: 89% !important;
+        padding: 0px !important;
+        margin: 50px;
+        }     
+        .lineDataClass { 
+        background-color: #F8F8F8;
+        z-index: 999;
+        background: #fff; 
+        position: relative;
+        width: 100%;
+        height: 143px;
+        overflow-y: scroll;
+        }
+        .modal-backdrop {
+        width: 100%; 
+        position: absolute; 
+        left: 0px;
+        background: rgba(0, 0, 0, 0.35);
+        top: 0px;
+        display: block;
+        z-index: 999;
+        height: 260px;
+        }
+        .btnClass { 
+        margin-bottom: 5px;
+        margin-top: 4px;
+        }
+        
+        .msgIcon {
+        display: none!important
+        }
+        .customMessage * {
+        color: #fff!important
+        }
+        .customMessage {
+        margin: 5px 0!important;
+        max-width: 1280px;
+        opacity: 1!important;
+        width: 100%;
+        font-size: 12px;
+        border: 0px;
+        padding-left: 10px;
+        }
+        .lookUp .lookupInput input[type="text"]{
+        width: auto !important;
+        }
+        .popupCheck, .scheduleImageSet {
+        float: left;
+        width: auto;
+        }  
+        .slds .slds-lookup__menu {
+        position : absolute;
+        width: 200px;
+        }
+        .slds .slds-page-header {
+        padding : 0.5px 24px 12px !important;
+        }
+        .slds .slds-select {
+        width : 18px;
+        }
+        .theader {
+        color: rgb(84, 105, 141);
+        text-transform: uppercase;
+        font-size: .75rem;
+        }
+        .slds .slds-lookup__menu .slds-lookup__list {
+        max-height: 125px;
+        }
+        #popup_container {
+        font-family: inherit, sans-serif;
+        font-size: 14px;
+        min-width: 300px; /* Dialog will be no smaller than this */
+        max-width: 600px; /* Dialog will wrap after this width */
+        background: #FFF;
+        color: #000;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        }
+        #popup_title {
+        font-size: 14px;
+        font-weight: 300;
+        text-align: center;
+        line-height: 1.75em;
+        color: #3e3e3c;
+        cursor: default;
+        padding: 0em;
+        margin: 0em;
+        border-bottom: 2px solid #dddbda;
+        padding: .5rem 0;
+        width: 100%;
+        display: block;
+        }
+        #popup_content {
+        padding: 1em 1.75em;
+        margin: 0em;
+        }
+        #popup_message {
+        text-align:center;
+        }
+        #popup_panel {
+        text-align: center;
+        margin: 1em 0em 0em 0em;
+        }
+        #popup_prompt {
+        margin: .5em 0em;
+        }
+        .warning, .info, .error, .confirmation{
+        font-size: 45px;
+        padding-top: 5px;
+        }
+        .warning {
+        color: yellow;
+        }
+        .info{
+        color: #3B5998;
+        }
+        .error {
+        color: red;
+        }
+        .confirmation {
+        color:#2F8903;
+        }
+        #popup_panel .btn.btn-success{
+        position: relative;
+        display: inline-block;
+        padding: 5px 10px;
+        background: transparent;
+        background-clip: border-box;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        color: #0070d2;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #dddbda;
+        background-color: white;
+        }
+        .none_text,.none_text:hover{
+        text-decoration:none;
+        }
+        .custome-x {
+        max-height: 190px;
+        overflow: auto;
+        }
+        .custome-x thead{display:block;}
+        .custome-x tbody{display:block;width:100%;overflow:auto;max-height:100px;}
+        .slds .slds-p-around--medium.custome-x{padding-top:0;}
+        .slds .slds-p-around--medium.custome-pad-x{padding-bottom:0}
+        .custome-classic-xy{max-height:150px;overflow:auto;}
+        .custome-x .custome-tr{display:flex;}
+        .custome-x .custome-tr th{font-weight:bold;color:#000;min-width:170px;max-width:170px;}
+        .custome-x .custome-tr td{min-width:170px;max-width:170px;}
+        .cus-top-serch{width:157px;}
+    </style>
+    <script>
+    window.onload=function() {
+        //document.getElementById('fieldToFocusInLightning').focus();
+    }
+    
+    $(document).ready(function(){
+        overridePageMessages(); 
+    });
+    
+    function overridePageMessages(){    
+        var textureEffect = '';
+        //Uncomment below line for texture effect on page messages
+        textureEffect = 'slds-theme--alert-texture';
+        
+        var theme  = '{!$User.UITheme}';
+        xdp
+        if(theme == 'Theme4d') {
+            $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+            $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+            $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+            $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+            
+            $('.errorM3').removeClass('errorM3'); 
+            $('.confirmM3').removeClass('confirmM3'); 
+            $('.infoM3').removeClass('infoM3');   
+            $('.warningM3').removeClass('warningM3');  
+        }
+    }
+    
+    function saveOli (elm , rowNum, rowValue) {
+        var id = elm.id+ '_lkid';
+        var val = document.getElementById(id).value;
+        saveRuleOnOli(rowNum , val, rowValue);
+    }
+    function updateOLILightning(rowNum, val) {
+        saveRuleOnOli(rowNum, val);
+    }
+    
+    var $k = jQuery.noConflict();
+    
+    function checkAll(obj, listSize) {
+        
+        var preFix = 'page:RevRecList:pbT2:';
+        var suffix = ':checkBox';
+        
+        for(i =0; i < parseInt(listSize) ; i++) {
+            var idP = preFix + i + suffix;
+            document.getElementById(idP).checked = obj.checked;
+        }
+    }
+    
+    function checkAllClassic(obj, listSize) {
+        
+        var preFix = 'page:RevRecList:pB1:pbT2:';
+        var suffix = ':checkBox';
+        
+        for(i =0; i < parseInt(listSize) ; i++) {
+            var idP = preFix + i + suffix;
+            document.getElementById(idP).checked = obj.checked;
+        }
+    }
+    
+    
+    //This method is used to open popup window
+    function showSplitPopup() {
+        $k(".modalPopUpClass").show();   
+        $k("#blockUIDiv").show();
+        $k(".ui-icon-closethick").bind('click', function() {
+            $k("#blockUIDiv").hide();
+            $k(".modalPopUpClass").dialog("close");
+        });
+    }
+    function closePopUp() {
+        $k("#blockUIDiv").hide();
+        $k(".modalPopUpClass").hide();
+    } 
+    
+    function onchangeSelectOpp(lineItemId , productId , rowNm, val) {
+        
+        if(val == 'Reset') {
+            jConfirm('Reset will remove overridden rule, continue?', 'Confirmation', function(r) {
+                if (r) {
+                    callReset(lineItemId , productId , rowNm);
+                } 
+            });
+        } else
+            window.parent.location = val;       
+    }
+    </script>
+    
+    <!-- Form -->
+    <apex:form id="RevRecList">
+        
+        <!-- Block UI -->
+        <c:BlockUI />
+        
+        <!-- Action Status -->
+        <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg" />
+        
+        <!-- Action Function -->
+        
+        <apex:actionFunction name="callReset" action="{!resetOverriddenRule}" reRender="pB" Status="waitMsg">
+            <apex:param name="lineItemIdd" assignTo="{!queryItemId}" value=""/>
+            <apex:param name="product2Idd" assignTo="{!queryProduct2Id}" value=""/>
+            <apex:param name="changedRowd" assignTo="{!oppLineItemRow}" value=""/>  
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="saveRuleOnOli" action="{!saveRuleOnOppLineItems}" rerender="page" Status="waitMsg"> 
+            <apex:param value="" assignTo="{!oppLineItemRow}" name="ruleRow" /> 
+            <apex:param value="" assignTo="{!oppRuleId}" name="ruleId" />
+            <apex:param value="" assignTo="{!oppRuleValue}" name="ruleValue"/>
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="showLines" action="{!showLineItemPopUpScreen}" rerender="LineItemDivData,opLight,LineItemDivData1,pB1" status="waitMsg" onComplete="showSplitPopup();">
+            <apex:param value="" assignTo="{!oppRuleId}" name="ruleIdd"/>
+        </apex:actionFunction>
+        <apex:actionFunction name="saveOpportunityLevelRule" action="{!saveOpportunityLevelRule}"  onComplete="closePopUp();" rerender="pB,opLight,pB1"/>
+        
+        <apex:outputpanel styleclass="slds" rendered="{!$User.UITheme == 'Theme4d'}" >
+            
+            <apex:outputPanel id="pB"> 
+                
+                <div class="container slds-p-around--medium custome-pad-x">
+    
+                        <table class="slds-table slds-table--bordered slds-table--cell-buffer" height="200%">
+                            <thead>
+                                <tr class="slds-text-title--caps">
+                                    <th scope="col" >
+                                        <!--<img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" style="max-width:none;"/>-->
+                                    </th>
+                                    <th scope="col" class="theader">
+                                        <div title="Total Opportunity">Total Opportunity</div>
+                                    </th>
+                                    <th scope="col" class="theader">
+                                        <div title="Total Recognized">Total Recognized</div>
+                                    </th>
+                                    <th scope="col" class="theader">
+                                        <div title="Total Deferred">Total Deferred</div>
+                                    </th>
+                                    <th scope="col" class="theader">
+                                        <div title="Total Residual">Total Residual</div>
+                                    </th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td scope="col">
+                                        <img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" style="max-width:none;"/>
+                                    </td>
+                                    <td scope="col">
+                                        <!-- Code modified  02/18/2015 - As per Advance Currency Managment Issue Fix -->
+                                        <apex:outputText value="{!oppTotalOpportunity}" rendered="{!isMultiCurrencyEnabled}" id="fieldToFocusInLightning"/> 
+                                        
+                                        <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"  rendered="{!Not(isMultiCurrencyEnabled)}">
+                                            <apex:param value="{!opportunity.REVvue_TotalOpportunity__c}" />
+                                        </apex:outputText> <br/>
+                                        <apex:outputText value="{!oppTotalOpportunityWeighted}" rendered="{!isMultiCurrencyEnabled}"/>
+                                        
+                                        <apex:outputText value="{!currencyFormate}{0, number, ,000.00}" rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                            <apex:param value="{!opportunity.REVvue_Total_Opp_wei__c}" />
+                                        </apex:outputText> 
+                                        <span style="color:#f48c42;">(Weighted)</span> 
+                                    </td>
+                                    <td scope="col">
+                                        <div>
+                                            <span style="Color:Green;" >
+                                                <!-- Code modified  02/18/2015 - As per Advance Currency Management Issue Fix -->
+                                                <apex:outputText value="{!oppTotalRecognized}" rendered="{!isMultiCurrencyEnabled}"/> 
+                                            </span>       
+                                            
+                                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}" rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                                <apex:param value="{!opportunity.REVvue_TotalRecognized__c}" />
+                                            </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td scope="col">
+                                        <div>
+                                            <span style="Color:Red;">                
+                                                <!-- Code modified  02/18/2015 - As per Advance Currency Managment Issue Fix -->
+                                                <apex:outputText value="{!oppTotalDeferred}" rendered="{!isMultiCurrencyEnabled}"/>
+                                            </span>
+                                            
+                                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}" rendered="{!Not(isMultiCurrencyEnabled)}">     
+                                                <apex:param value="{!opportunity.REVvue_TotalDeferred__c}" />
+                                            </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td scope="col"> 
+                                        <div>
+                                            <!-- Code modified  02/18/2015 - As per Advance Currency Managment Issue Fix -->
+                                            <apex:outputText value="{!oppTotalResidual}"  rendered="{!isMultiCurrencyEnabled}"/>                
+                                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}" rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                                <apex:param value="{!opportunity.REVvue_TotalResidual__c}" />
+                                            </apex:outputText><br/>
+                                            <apex:outputText value="{!oppTotalResidualWeighted}" rendered="{!isMultiCurrencyEnabled}"/>                
+                                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"  rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                                <apex:param value="{!opportunity.REVvue_TotalResidualwei__c}" />
+                                            </apex:outputText> 
+                                            <span style="color:#f48c42;">(Weighted)</span>         
+                                        </div>
+                                    </td>
+                                    <td scope="col"> 
+                                        <div class="lookUp popupCheck cus-top-serch">
+                                            <apex:outputpanel layout="block" styleclass="slds" rendered="{!$User.UITheme == 'Theme4d'}" >
+                                                <apex:outputpanel id="opLight">
+                                                    
+                                                    <div class="slds-grid slds-wrap">   
+                                                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                                            <div class="slds-form--stacked">
+                                                                <div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+                                                                    <div class="slds-form-element">
+                                                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                                                            <svg aria-hidden="true" class="slds-input__icon" onClick="oppSerachLookupOnKeyUpEvet('lookup');">
+                                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                            </svg>                              
+                                                                            <input id="lookup" value="{!Oppty.REVvue_RevRecRule__r.Name}" class="slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="false" aria-activedescendant=""
+                                                                                   onkeyup="oppSerachLookupOnKeyUpEvet(this);"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-lookup__menu" role="listbox" id="results" style="display:none" >
+                                                                        <div class="slds-lookup__item">
+                                                                            <button class="slds-button">
+                                                                                <svg aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon--small">
+                                                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                                </svg>&quot;<span id="keyword"></span>&quot; in Rules </button>
+                                                                        </div>
+                                                                        <ul class="slds-lookup__list" role="presentation" id="ui_results">                                                                                       
+                                                                        </ul>                           
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div> 
+                                                </apex:outputpanel>
+                                            </apex:outputpanel>
+                                        </div>
+                                        
+                                        <apex:outputpanel rendered="{!$User.UITheme == 'Theme4d'}">                                             
+                                            <select name="format" onchange="window.parent.location = this.value;" Class="slds-select selectList">
+                                                <option value= "" />
+                                                <option value="/apex/RevRecOpportunitySchedulesCopy_Clone?opportunityId={!OpportunityId}" >Schedule</option>
+                                                <option value="/apex/RevRecOpportunityRollupCalculate?opportunityId={!OpportunityId}" >Rollup</option>
+                                            </select>
+                                        </apex:outputpanel>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table> 
+  
+                </div>
+                
+                <!-- Page Message -->
+                <apex:pageMessages />   
+                
+                <!-- Apex variable  -->
+                <apex:variable value="{!0}" var="rowNum"/>
+                
+                <div  class="container slds-p-around--medium custome-x">
+ 
+                        <table class="slds-table slds-table--bordered slds-table--cell-buffer columnWidth" >
+                            <thead>
+                                <tr class="slds-text-title--caps custome-tr">
+                                    <th class="theader">Product</th>
+                                    <th class="theader">Total Price</th>
+                                    <th class="theader">Deferred Rev.</th>
+                                    <th class="theader">Deferred Rev.(Weighted)</th>
+                                    <th class="theader">Recognized Rev.</th>
+                                    <th class="theader">Recognized Rev.(Weighted)</th>
+                                    <th class="theader">Rule Used</th>
+                                    <th class="theader">Assignment Rule</th>
+                                    <th class="theader">Allocated</th>
+                                    <th class="theader">Actions</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                                <apex:repeat value="{!OppLineItems}" var="item">
+                                    <tr class="custome-tr">
+                                        <td>{!item.LineItem.PricebookEntry.Name}</td>
+                                        <td>
+                                            <apex:outPutText value="{!item.lineItemTotalPrice}" rendered="{!isMultiCurrencyEnabled}" />
+                                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!item.lineItem.TotalPrice}"/>
+                                            </apex:outPutText>
+                                        </td>
+                                        <td>
+                                            <apex:outPutText value="{!item.revRecDeferredPrice}" rendered="{!isMultiCurrencyEnabled}" />
+                                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!item.RevRecLineItem.DeferredRev__c}"/>
+                                            </apex:outPutText>
+                                        </td>
+                                        <td>
+                                            <apex:outPutText style="color:blue;" value="{!item.revRecDeferredPriceWeighted}" rendered="{!isMultiCurrencyEnabled}" />
+                                            <apex:outPutText style="color:blue;" rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!item.RevRecLineItem.DefReWei__c}" /> 
+                                            </apex:outPutText>
+                                        </td>
+                                        <td>
+                                            <apex:outPutText value="{!item.revRecRecognizedRev}" rendered="{!isMultiCurrencyEnabled}" /> 
+                                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!item.RevRecLineItem.RecognizedRev__c}" /> 
+                                            </apex:outPutText>
+                                        </td> 
+                                        <td>
+                                            <apex:outPutText style="color:blue;" value="{!item.revRecRecognizedRevWeighted}" rendered="{!isMultiCurrencyEnabled}" /> 
+                                            <apex:outPutText style="color:blue;" rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                                <apex:param value="{!item.RevRecLineItem.RecRevWei__c   }" /> 
+                                            </apex:outPutText>
+                                        </td>
+                                        <td>
+                                            <apex:outputpanel layout="block" styleclass="slds" >
+                                                <apex:outputpanel id="opLight1">
+                                                    <div class="slds-grid slds-wrap">   
+                                                        <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                                            <div class="slds-form--stacked">
+                                                                <div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+                                                                    <div class="slds-form-element">
+                                                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                                                            <svg aria-hidden="true" class="slds-input__icon" onclick="lineitemserachLookupOnKeyUpEvet('lookup-{!rowNum}', this.value);" >
+                                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                            </svg>                              
+                                                                            <input id="lookup-{!rowNum}" value="{!item.LineItem.RevRecRule__r.Name}" class="slds-input" type="text" aria-autocomplete="list" role="combobox" 
+                                                                                   aria-expanded="false" aria-activedescendant="" style="width:194px;" onkeyup="lineitemserachLookupOnKeyUpEvet(this, this.value);"
+                                                                                   onfocusout="updateOLILightning('{!rowNum}', {!item.LineItem.RevRecRule__c});"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-lookup__menu" role="listbox" id="results-{!rowNum}" style="display:none;bottom:40px;" >
+                                                                        <div class="slds-lookup__item">
+                                                                            <button class="slds-button">
+                                                                                <svg aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon--small">
+                                                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                                </svg>&quot;<span id="keyword-{!rowNum}"></span>&quot; in Rules </button>
+                                                                        </div>
+                                                                        <ul class="slds-lookup__list" role="presentation" id="ui_results-{!rowNum}">                                                                                       
+                                                                        </ul>                           
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>                               
+                                                    </div>  
+                                                </apex:outputpanel>
+                                            </apex:outputpanel>
+                                        </td>
+                                        <!-- Code added on 07/14/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+                                        <td>
+                                            <apex:outputPanel rendered="{!item.LineItem.Rule_Assignment_Type__c == null}">
+                                                <a target="_parent" href="/apex/RevRecConfig_clone?tab=1&ruleIdEdit={!item.LineItem.Rule_Assignment__c}">{!item.LineItem.Rule_Assignment__r.Name}</a>
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!item.LineItem.Rule_Assignment_Type__c != null}">
+                                                [Overridden]
+                                            </apex:outputPanel>
+                                        </td>
+                                        
+                                        <!-- Code added on 07/22/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+                                        <td>
+                                            <apex:outputPanel rendered="{!item.RevRecLineItem.Allocated__c == 100}">
+                                                <apex:outputField value="{!item.RevRecLineItem.Allocated__c}" />
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!item.RevRecLineItem.Allocated__c != 100}" style="color:red">
+                                                <apex:outputField value="{!item.RevRecLineItem.Allocated__c}"/>
+                                            </apex:outputPanel>
+                                        </td>
+                                        <td >
+                                            <apex:outputpanel rendered="{!$User.UITheme == 'Theme4d'}">
+                                                <select name="format"  Class="slds-select selectList" onchange="onchangeSelectOpp('{!item.LineItem.Id}' , '{!item.LineItem.PricebookEntry.Product2.Id}' , '{!rowNum}' , this.value)"> 
+                                                    <option value= "" />
+                                                    <option value= "/apex/RevRecProductRule_Clone?opportunityLineItemId={!item.LineItem.id}&opportunityId={!OpportunityId}&salesforceTheme= {!$User.UIThemeDisplayed}" >Override</option>
+                                                    <option value="/apex/RevRecSchedule_NewClone?opportunityLineItemId={!item.LineItem.id}&opportunityId={!OpportunityId}&salesforceTheme= {!$User.UIThemeDisplayed}" >Schedule</option>
+                                                    <apex:outputpanel rendered="{!item.HasOverriddenRule}" >
+                                                        <option value="">Reset </option>
+                                                    </apex:outputpanel>
+                                                </select>
+                                            </apex:outputpanel>                               
+                                        </td>
+                                        <td>
+                                            <!-- Apex variable Increment -->
+                                            <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                                        </td>
+                                    </tr>
+                                </apex:repeat> 
+                            </tbody>
+                        </table>
+                 
+                </div> 
+                
+                <!-- Code added - 04/21/2016 - As per Feature #6 to show popup on select rule on opportunity level -->
+                <div id="blockUIDiv" style="display:none;" class="modal-backdrop "> 
+                    <apex:outputpanel id="lineItemDiv" layout="block" style="display:none;background-color:#F8F8F8;" styleClass="modalPopUpClass"> 
+                        <apex:outputpanel layout="block" id="LineItemDivData" styleClass="lineDataClass " >
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead class="slds-modal__header">
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate" >
+                                                <div class="slds-form-element" >
+                                                    <label class="slds-checkbox">
+                                                        <apex:inputcheckbox styleclass=" slds-input slds-form-element_control" onClick="checkAll(this, '{!JSENCODE(TEXT(lineItemsWrap.size))}');" id="headerCheckBoxs"/>
+                                                        <span class="slds-checkbox--faux"></span>
+                                                    </label>
+                                                </div>  
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product Name"><b>Product Name</b></div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Revenue Recognition Rule"><b>Revenue Recognition Rule</b></div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                
+                                <tbody>
+                                    <apex:repeat value="{!lineItemsWrap}" var="li" id="pbT2">
+                                        <tr>
+                                            <td scope="col">
+                                                <div class="slds-truncate">
+                                                    <div class="slds-form-element" >
+                                                        <label class="slds-checkbox">
+                                                            <apex:inputcheckbox styleclass=" slds-input slds-form-element_control" value="{!li.isSelectedLineItem}" id="checkBox"  />
+                                                            <span class="slds-checkbox--faux"></span>
+                                                        </label>
+                                                    </div> 
+                                                </div>
+                                            </td>
+                                            <td scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:OutPutField value="{!li.LineItem.PricebookEntry.Name}" />
+                                                </div>
+                                            </td>
+                                            <td scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputField value="{!li.LineItem.RevRecRule__c}" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat> 
+                                </tbody>
+                            </table>
+                        </apex:outputpanel>
+                        
+                        <br/>
+                        <div class="slds-grid slds-grid--align-center">
+                            <div class="slds-col">
+                                <input type="button" class="slds-button slds-button--neutral  " Value="Save" onClick="saveOpportunityLevelRule();"/>
+                                <input type="button" class="slds-button slds-button--neutral" Value="Close" status="waitMsg"  onclick="closePopUp();" reRender="pB"/>
+                            </div>
+                        </div>
+                    </apex:outputpanel>
+                </div> 
+            </apex:outputPanel>      
+        </apex:outputpanel>  
+        
+        <!-- Salesforce Classic Page -->
+        <apex:outputpanel rendered="{!$User.UITheme == 'Theme3'}"> 
+            
+            <!-- Page Block -->
+            <apex:pageblock id="pB1" >
+                
+                <!-- Page Message -->
+                <apex:pageMessages />   
+                <div class="custome-classic-xy">
+                    <!-- Apex variable  -->
+                    <apex:variable value="{!0}" var="rowNum"/>
+                    
+                    <!-- Page Block Table to show all line items -->
+                    <apex:pageBlockTable value="{!OppLineItems}" var="item" id="pbt1">  
+                        
+                        <apex:column headerValue="Product" value="{! item.LineItem.PricebookEntry.Name}"/>
+               
+                        <apex:column headerValue="Total Price" style="text-align:right" headerClass="center">
+                            <apex:outPutText value="{!item.lineItemTotalPrice}" rendered="{!isMultiCurrencyEnabled}" />
+                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!item.lineItem.TotalPrice}"/>
+                            </apex:outPutText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Deferred Rev." style="text-align:right;color:blue;"  headerClass="center">
+                            <apex:outPutText value="{!item.revRecDeferredPrice}" rendered="{!isMultiCurrencyEnabled}" />
+                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!item.RevRecLineItem.DeferredRev__c}"/> 
+                            </apex:outPutText>
+                        </apex:column>     
+                        
+                        <apex:column headerValue="Deferred Rev. (Weighted)" style="text-align:right;color:red;"  headerClass="center">
+                            <apex:outPutText value="{!item.revRecDeferredPriceWeighted}" rendered="{!isMultiCurrencyEnabled}" />
+                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!item.RevRecLineItem.DefReWei__c}"/> 
+                            </apex:outPutText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Recognized Rev." style="text-align:right;color:blue;"  headerClass="center">
+                            <apex:outPutText value="{!item.revRecRecognizedRev}" rendered="{!isMultiCurrencyEnabled}" /> 
+                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!item.RevRecLineItem.RecognizedRev__c}" />
+                            </apex:outPutText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Recognized Rev.(Weighted)" style="text-align:right;color:red;"  headerClass="center">
+                            <apex:outPutText value="{!item.revRecRecognizedRevWeighted}" rendered="{!isMultiCurrencyEnabled}" /> 
+                            <apex:outPutText rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!item.RevRecLineItem.RecRevWei__c}" />
+                            </apex:outPutText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Calculated"  style="text-align:center" headerClass="center">
+                            <apex:outputField value="{! item.RevRecLineItem.CalculatedAt__c}" />
+                        </apex:column>
+                        
+                        <apex:column headerValue="Rule Used">
+                            <!--  {!item.RuleNameDisplay} -->
+                            <!--  Code added - 04/19/2016 - As per to enable rule on line item level -->
+                            <apex:inputField value="{!item.lineItem.RevRecRule__c}" styleClass="ruleLookup" onchange="saveOli(this, '{!rowNum}', this.value);" id="oliM"/>
+                            
+                            <span style="float:right;"></span>
+                        </apex:column>
+                        
+                        <!-- Code added on 07/14/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+                        <apex:column headerValue="Assignment Rule">
+                            <apex:outputPanel rendered="{!item.LineItem.Rule_Assignment_Type__c == null}">
+                                <a target="_parent" href="/apex/RevRecConfig?tab=1&ruleIdEdit={!item.LineItem.Rule_Assignment__c}">{!item.LineItem.Rule_Assignment__r.Name}</a>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel rendered="{!item.LineItem.Rule_Assignment_Type__c != null}">
+                                [Overridden]
+                            </apex:outputPanel>
+                        </apex:column>
+                        
+                        <!-- Code added on 07/22/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+                        <apex:column headerValue="Allocated">
+                            <apex:outputPanel rendered="{!item.RevRecLineItem.Allocated__c == 100}">
+                                <apex:outputField value="{!item.RevRecLineItem.Allocated__c}" />
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel rendered="{!item.RevRecLineItem.Allocated__c != 100}" style="color:red">
+                                <apex:outputField value="{!item.RevRecLineItem.Allocated__c}"/>
+                            </apex:outputPanel>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Actions" style="text-align:right;width:6%;"  headerClass="center">
+                            
+                            <!--Code is commented on 07/13/2016 FEATURE # 1: Ability to change the RevRec Rule at the line item level-->
+                            <apex:commandLink rendered="{!item.HasOverriddenRule}" action="{!resetOverriddenRule}" title="reset override rule" onclick="javascript:if (window.confirm('Reset will remove overridden rule, continue?')) {;} else return false;" >
+                                <apex:param name="lineItemId" value="{!item.LineItem.Id}" assignTo="{!queryItemId}"></apex:param>
+                                <apex:param name="product2Id" value="{!item.LineItem.PricebookEntry.Product2.Id}" assignTo="{!queryProduct2Id}"/>
+                                <apex:param name="changedRow" value="{!rowNum}" assignTo="{!oppLineItemRow}" /> 
+                                <apex:image value="{!URLFOR($Resource.images, 'reset.jpg')}"  title="Reset to Default Rule" width="25" height="25" />  
+                            </apex:commandLink>
+                            <apex:outputlabel rendered="{!(not item.HasOverriddenRule)}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputlabel>
+                            <a  href="javascript:window.parent.location = '{!URLFOR($Page.RevRecProductRule,null, [opportunityLineItemId=item.LineItem.id,opportunityId=OpportunityId,salesforceTheme='Theme3'] )}';"  >
+                                <apex:image title="Edit Rule or Update Values" rendered="{!item.HasOverriddenRule}" value="{!URLFOR($Resource.images, 'edit.jpg')}" width="25" height="25"/>
+                                <apex:image title="Override Rule or Update Values" rendered="{!(not item.HasOverriddenRule)}" value="{!URLFOR($Resource.images, 'edit.jpg')}" width="25" height="25" />
+                            </a>
+                            <a title="View Line Item Revenue Schedules" href="javascript:window.parent.location = '{!URLFOR($Page.RevRecSchedule,null, [opportunityLineItemId=item.LineItem.id,opportunityId=OpportunityId] )}';" >
+                                <img src="{!URLFOR($Resource.images, 'Details_graph_sm.gif')}" width="25" height="25" /></a>
+                        </apex:column> 
+                        
+                        <!-- Apex variable Increment --> 
+                        <apex:column >
+                            <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                        </apex:column>
+                        
+                    </apex:pageBlockTable> 
+                </div>
+                <apex:facet name="header">
+                    <apex:panelGrid columns="6" id="theid"  width="1000px">
+                        <apex:panelGroup >
+                            <apex:outputText ><img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" /></apex:outputText><br/>
+                            <apex:outputText value="Revenue Recognition -- {!opportunity.Name}" style="width:30%;"></apex:outputText>
+                        </apex:panelGroup>
+                        
+                        <apex:panelGroup >
+                            <apex:outputText value="Total Opportunity"/>
+                            <br/>               
+                            <!-- Code modified  02/18/2015 - As per Advance Currency Management Issue Fix -->
+                            <apex:outputText value="{!oppTotalOpportunity}"  rendered="{!isMultiCurrencyEnabled}"/> 
+                            
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"   rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                <apex:param value="{!opportunity.REVvue_TotalOpportunity__c}" />
+                            </apex:outputText> <br/>
+                            <apex:outputText value="{!oppTotalOpportunityWeighted}"  rendered="{!isMultiCurrencyEnabled}"/>
+                            
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"   rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                <apex:param value="{!opportunity.REVvue_Total_Opp_wei__c    }" />
+                            </apex:outputText> 
+                            <span style="color:#f48c42;">(Weighted)</span>  
+                        </apex:panelGroup>
+                        
+                        <apex:panelGroup >
+                            <apex:outputText value="Total Recognized"/>
+                            <br/>
+                            <span style="Color:Green;" >
+                                <!-- Code modified  02/18/2015 - As per Advance Currency Management Issue Fix -->
+                                <apex:outputText value="{!oppTotalRecognized}"  rendered="{!isMultiCurrencyEnabled}"/> 
+                            </span>       
+                            
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"  rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                <apex:param value="{!opportunity.REVvue_TotalRecognized__c}" />
+                            </apex:outputText><br/>
+                           
+                        </apex:panelGroup>
+                        
+                        <apex:panelGroup >
+                            <apex:outputText value="Total Deferred"></apex:outputText><br/>
+                            <span style="Color:Red;">                
+                                <!-- Code modified  02/18/2015 - As per Advance Currency Management Issue Fix -->
+                                <apex:outputText value="{!oppTotalDeferred}"  rendered="{!isMultiCurrencyEnabled}"/>
+                            </span>
+                            
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"   rendered="{!Not(isMultiCurrencyEnabled)}">     
+                                <apex:param value="{!opportunity.REVvue_TotalDeferred__c}" />
+                            </apex:outputText><br/>  
+                        </apex:panelGroup>
+                        
+                        <apex:panelGroup >
+                            <apex:outputText value="Total Residual"/><br/>
+                            <!-- Code modified  02/18/2015 - As per Advance Currency Management Issue Fix -->
+                            <apex:outputText value="{!oppTotalResidual}"  rendered="{!isMultiCurrencyEnabled}"/>                
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"   rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                <apex:param value="{!opportunity.REVvue_TotalResidual__c}" />
+                            </apex:outputText> <br/>
+                            <apex:outputText value="{!oppTotalResidualWeighted}"  rendered="{!isMultiCurrencyEnabled}"/>                
+                            <apex:outputText value="{!currencyFormate}{0, number, ,000.00}"   rendered="{!Not(isMultiCurrencyEnabled)}"> 
+                                <apex:param value="{!opportunity.REVvue_TotalResidualwei__c}" />
+                            </apex:outputText> 
+                            <span style="color:#f48c42;">(Weighted)</span>         
+                        </apex:panelGroup>
+                        
+                        <apex:panelGroup >
+                            <apex:inputField value="{!oppty.REVvue_RevRecRule__c}" onchange="showLines('{!oppty.REVvue_RevRecRule__c}');" style="width:60%;" id="oppRuleId" styleClass="oppRuleClass" />
+                            <!-- Code added on 07/14/2016 - FEATURE # 8: Add links the assignment rule on oppty --> 
+                            <a class="none_text" target="_parent" href="/apex/RevRecConfig?tab=1&ruleIdEdit={!oppty.REVvue_RuleAssignment__c}">{!oppty.REVvue_RuleAssignment__r.Name}</a> 
+                            <a class="none_text" href="javascript:window.parent.location = '{!URLFOR($Page.RevRecOpportunitySchedulesCopy,null, [opportunityId=OpportunityId] )}';" title="View Opportunity Revenue Schedules" >
+                                <apex:image value="{!URLFOR($Resource.images, 'rev_rec_schedules.jpg')}" width="28" height="28"/>
+                            </a>
+                            <!-- Code added on 11/25/2019 - FEATURE : Added Mass rollup calculation functionality--> 
+                            <a href="javascript:window.parent.location = '{!URLFOR($Page.RevRecOpportunityRollupCalculate,null, [opportunityId=OpportunityId] )}';" title="View Opportunity Mass Rollup" >
+                                <apex:image value="{!$Resource.MassRollupCalculate}" width="28" height="28"/> 
+                            </a>
+                        </apex:panelGroup> 
+                    </apex:panelGrid> 
+                </apex:facet>
+                
+                <!-- Code added - 04/21/2016 - As per Feature #6 to show popup on select rule on opportunity level -->
+                <div id="blockUIDiv" style="display:none;" class="modal-backdrop "> 
+                    <apex:outputpanel id="lineItemDiv" layout="block" style="display:none;background-color:#F8F8F8;" styleClass="modalPopUpClass"> 
+                        <apex:outputpanel layout="block" id="LineItemDivData1" styleClass="lineDataClass ">
+                            <apex:pageBlockTable value="{!lineItemsWrap}" var="li" id="pbT2">    
+                                <apex:column >   
+                                    <apex:facet name="header">
+                                        <apex:inputCheckbox onClick="checkAllClassic(this, '{!JSENCODE(TEXT(lineItemsWrap.size))}');" id="headerCheckBox" />
+                                    </apex:facet>
+                                    <apex:inputcheckbox value="{!li.isSelectedLineItem}" id="checkBox"/> 
+                                </apex:column>
+                                
+                                <apex:column headerValue="Product Name">
+                                    <apex:OutPutField value="{!li.LineItem.PricebookEntry.Name}" />
+                                </apex:column>
+                                
+                                <apex:column headerValue="Revenue Recognition Rule" >
+                                    <apex:outputField value="{!li.LineItem.RevRecRule__c}" />
+                                </apex:column>
+                            </apex:pageBlockTable>
+                        </apex:outputpanel>
+                        <center>
+                            <input type="button" class="btnClass btn" Value="Save" onClick="saveOpportunityLevelRule();"/>
+                            <input type="button" class="btnClass btn" Value="Close" status="waitMsg"  onclick="closePopUp();" reRender="pB"/>
+                        </center>
+                    </apex:outputpanel>
+                </div>
+            </apex:pageblock>   
+        </apex:outputpanel> 
+        
+        <script>        
+        var j$ = jQuery.noConflict();
+        function lineitemserachLookupOnKeyUpEvet (elm, rowValue) {
+            var rowCount = '';
+            if(typeof elm === 'string' && elm.indexOf('lookup-') != -1)
+                rowCount = elm.split('-')[1];
+            else
+                rowCount = elm.id.split('-')[1];
+            
+            j$('#results-'+rowCount).css("display","block");
+            j$('#lookup-'+rowCount).attr('aria-expanded','true'); 
+            j$('#keyword-'+rowCount).html(j$('#lookup-'+rowCount).val());
+            
+            Visualforce.remoting.Manager.invokeAction(  
+                '{!$RemoteAction.RevRecOpportunityExtension.queryRules}', 
+                j$('#lookup-'+rowCount).val(),                                                 
+                function(result, event){ console.log(result);
+                                        if (event.status) {
+                                            document.getElementById("ui_results-"+rowCount).innerHTML = "";
+                                            populateLookup1(result,rowCount,rowValue);console.log(rowCount);
+                                        } else if (event.type === 'exception') {
+                                            j$('#lookup-'+rowCount) = 'ERROR: ' + event.message;   
+                                        } else {
+                                            j$('#lookup-'+rowCount) = 'ERROR: ' + event.message;   
+                                        }
+                                       }, 
+                {escape: true}
+            );            
+        } 
+        function populateLookup1(result,rowCount,rowValue){
+            
+            if(result){                        
+                j$( result ).each(function() {                       
+                    console.log('1'+this);
+                    j$('#ui_results-'+rowCount).append('<li class="slds-lookup__item">' + 
+                                                       '<a id="' + this.Id + '" href="javascript:void(0)" role="option">' + 
+                                                       '<svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-icon--small">' + 
+                                                       '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>' + 
+                                                       '</svg>' + this.Name +'</a>' + 
+                                                       '</li>'); 
+                });
+                
+                j$('ul.slds-lookup__list a').click(function(e) 
+                                                   {                                  
+                                                       j$('#lookup-'+rowCount).val(j$(this)[0].innerText); 
+                                                       j$('#lookup-'+rowCount).attr('aria-activedescendant',j$(this)[0].id);
+                                                       j$('#lookup-'+rowCount).attr('aria-expanded','false');
+                                                       var ruleId = j$(this)[0].id;
+                                                       saveRuleOnOli(rowCount , ruleId, rowValue);
+                                                       j$('#results-'+rowCount).css("display","none");
+                                                   }); 
+            }                
+        }           
+        
+        function oppSerachLookupOnKeyUpEvet (elm) {
+            
+            j$('#results').css("display","block");
+            j$('#lookup').attr('aria-expanded','true'); 
+            j$('#keyword').html(j$('#lookup').val());
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.RevRecOpportunityExtension.queryRules}',
+                j$('#lookup').val(),                                                 
+                function(result, event){
+                    if (event.status) {
+                        document.getElementById("ui_results").innerHTML = "";
+                        populateLookup(result);
+                    } else if (event.type === 'exception') {
+                        j$('#lookup') = 'ERROR: ' + event.message;   
+                    } else {
+                        j$('#lookup') = 'ERROR: ' + event.message;
+                    }
+                }, 
+                {escape: true} 
+            );            
+        }
+        
+        function populateLookup(result){
+            if(result){                        
+                j$( result ).each(function() {                        
+                    console.log(this);
+                    j$('#ui_results').append('<li class="slds-lookup__item">' + 
+                                             '<a id="' + this.Id + '" href="javascript:void(0)" role="option">' + 
+                                             '<svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-icon--small">' + 
+                                             '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>' + 
+                                             '</svg>' + this.Name +'</a>' + 
+                                             '</li>');
+                });
+                
+                j$('ul.slds-lookup__list a').click(function(e) 
+                                                   {                                  
+                                                       j$('#lookup').val(j$(this)[0].innerText); 
+                                                       j$('#lookup').attr('aria-activedescendant',j$(this)[0].id);
+                                                       j$('#lookup').attr('aria-expanded','false');
+                                                       var ruleId = j$(this)[0].id;
+                                                       showLines(ruleId);
+                                                       j$('#results').css("display","none");
+                                                   }); 
+            }            
+        } 
+        </script>
+    </apex:form>
+</apex:page>

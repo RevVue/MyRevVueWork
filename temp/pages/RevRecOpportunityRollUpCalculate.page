@@ -1,0 +1,651 @@
+<apex:page controller="MassRollUpCalculateController" showHeader="false" lightningStylesheets="true" action="{!MassRollUpCalculateController}">
+    <!-- CSS -->
+    <style>
+        .color-box {
+        width: 10px;
+        height: 10px;
+        }
+        .rt{text-align:right;}
+        .pbSubsection {
+        overflow: auto;
+        }
+        .headerRow .headerClassStyle{
+        background-color: #F0F8FF !important;
+        text-align:left !important;
+        font-size:100% !important;
+        }
+        
+    </style>
+    
+    <!-- /CSS -->
+    <style type = "text/css">  
+        .leftAlign {text-align:left;} 
+    </style>
+    
+    
+    <script> 
+    var listOfYearsAsKey = []; 
+    </script> 
+    <apex:repeat value="{!theListOfYears}" var="request"> 
+        <script> 
+        listOfYearsAsKey.push('{!request}'); 
+        </script> 
+    </apex:repeat>
+    <script> 
+    function showMonthlyRollUpsFY(year) {
+        for(let i=0;i<listOfYearsAsKey.length;i++) {
+            if(year == listOfYearsAsKey[i]) {
+                passSelectedYear(year);
+            }
+        }
+    }
+    function showMonthlyRollUps(year) {
+        var jsMap = new Object();
+        jsMap.mapOfYearlyIdWithMonthlyRollups = '{!mapOfYearlyIdWithMonthlyRollups}'; 
+        for(let key in jsMap.mapOfYearlyIdWithMonthlyRollups) {
+            if(year === key) {
+                passSelectedYear(year);
+            }
+        }
+    }
+    </script> 
+    
+    <!-- Form -->
+    <apex:form id="resultPanel">
+        
+        <!--Page Messages-->
+        <apex:pageMessages />
+        
+        <!-- Page Block -->
+        <apex:pageBlock title="Annual Revenue - {!oppty.Name}" rendered="{!isHavingPermssion}"> 
+            
+            <!-- Page Button -->
+            <apex:pageBlockButtons location="top" style="text-align: left;">
+                <!--RevView logo --> 
+                <img src="{!URLFOR($Resource.images, 'REV_Log1.png')}" />  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <apex:commandButton action="{!cancel}" value="Back to Opportunity"/>
+            </apex:pageBlockButtons><!-- /Page Button -->
+            
+            <!-- Page message -->
+            <apex:pageMessages />
+            
+            <!-- Page Block Section for opportunity -->
+            <apex:pageBlockSection title="Summary"  columns="1"  rendered="{!isHavingPermssion}">
+                <apex:panelGrid columns="3" id="theid"  width="1000px" > 
+                    <apex:outputText value="Today"></apex:outputText> 
+                    <apex:outputText value="TCV Actual"></apex:outputText>
+                    <apex:outputText value="TCV Weighted"></apex:outputText>
+                    
+                    <apex:outputText value="{0,date,MM/dd/yy}"> <apex:param value="{!CloseDateValue}" /> </apex:outputText>
+                    <apex:outputText value="{!oppTotalOpportunity}"  rendered="{!isMultiCurrencyEnabled}"/>
+                    <apex:outputText value="{!oppTotalOpportunityWei}"  rendered="{!isMultiCurrencyEnabled}"/>
+                    
+                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                        <apex:param value="{!oppTotalOpportunityForSingleCurrency}"/>
+                    </apex:outputText>
+                    <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+                        <apex:param value="{!oppTotalOpportunityWeiForSingleCurrency}"/>
+                    </apex:outputText>
+                </apex:panelGrid>
+            </apex:pageBlockSection><!-- /Page Block Section for opportunity -->
+            
+            <!-- Page Block Section for roll up data -->
+            
+            <apex:actionFunction reRender="resultPanel" action="{!getMonthlyRevnueRollUpAccordingSelectedYear}" name="passSelectedYear" >
+                <apex:param value="" assignTo="{!selectedYear}" name="selectedYear"/>
+            </apex:actionFunction>
+            <apex:pageBlock rendered="{!isMultiCurrencyEnabled}" >
+                <apex:pageBlockSection title="Detail" columns="2" rendered="{!IF(AND(isHavingPermssion,IsHavingFiscalYear), FALSE, TRUE)}">
+                    
+                    <apex:outputPanel rendered="{!IF(NOT(ISNULL(monthlySelectedRevenueRollups)) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!listOfMonthlyWrapper}" var="monthly" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!monthly.monthValue}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthValue}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!monthly.yearValue}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.yearValue}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.dateValue}" /> 
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.dateValue}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!monthly.monthlyActualValue}"  style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!monthly.monthlyForecastedValue}"  style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthlyForecastedValue}"  style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!monthly.monthlyForecastedWeightedvalue}"  style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthlyForecastedWeightedvalue}"  style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!IF(ISNULL(monthlySelectedRevenueRollups) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!currentMonthlyFiscalYear}" var="item" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!item.month}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.month}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!item.schYear}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.schYear}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="-"  style="color:green;margin-left:25%;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column> 
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:pageBlockTable value="{!listOfYearlyWrapper}" var="yearly"  headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                        <apex:column headerValue="Year" width="10%">
+                            <apex:commandLink onclick="showMonthlyRollUps('{!yearly.yearValue}'); return false;" style="color:black;" rendered="{!VALUE(yearly.yearValue) < Year(TODAY())}">
+                                {!yearly.yearValue} 
+                            </apex:commandLink>
+                            <apex:commandLink onclick="showMonthlyRollUps('{!yearly.yearValue}'); return false;" style="color:green;" rendered="{!VALUE(yearly.yearValue) >= Year(TODAY())}">
+                                {!yearly.yearValue}
+                            </apex:commandLink>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Date" width="30%">
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"  style="color:black;" rendered="{!VALUE(yearly.yearValue) < Year(TODAY())}">
+                                <apex:param value="{!yearly.dateValue}" />
+                            </apex:outputText>
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"  style="color:green;" rendered="{!VALUE(yearly.yearValue) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.dateValue}" />
+                            </apex:outputText>
+                            <!--<apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(yearly.yearValue) > Year(TODAY())}"/>-->
+                        </apex:column>
+                        
+                        <apex:column headerValue="Actual Revenue" width="30%">
+                            <apex:outputText value="{!yearly.yearlyActualValue}"  style="color:black;" rendered="{!VALUE(yearly.yearValue) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyActualValue}"  style="color:green;" rendered="{!VALUE(yearly.yearValue) == Year(TODAY())}"/>
+                            <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(yearly.yearValue) > Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue" width="30%">
+                            <apex:outputText value="{!yearly.yearlyForecastedValue}"  style="color:black;" rendered="{!VALUE(yearly.yearValue) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyForecastedValue}"  style="color:green;" rendered="{!VALUE(yearly.yearValue) >= Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue(Weighted)" width="30%">
+                            <apex:outputText value="{!yearly.yearlyForecastedWeightedvalue}"  style="color:black;" rendered="{!VALUE(yearly.yearValue) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyForecastedWeightedvalue}"  style="color:green;" rendered="{!VALUE(yearly.yearValue) >= Year(TODAY())}"/>
+                        </apex:column>                   
+                    </apex:pageBlockTable>
+                    
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection title="Detail" columns="2" rendered="{!IF(AND(isHavingPermssion,IsHavingFiscalYear), TRUE, FALSE)}">
+                    
+                    <apex:outputPanel rendered="{!IF(NOT(ISNULL(monthlySelectedRevenueRollups)) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!listOfMonthlyWrapper}" var="monthly" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%" >
+                                <apex:outputText value="{!monthly.monthValue}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthValue}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column> 
+                            
+                            <apex:column headerValue="Year" width="10%">
+                                <apex:outputText value="{!monthly.yearValue}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.yearValue}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="10%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.dateValue}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.dateValue}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="20%">
+                                <apex:outputText value="{!monthly.monthlyActualValue}"  style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!monthly.monthlyForecastedValue}"  style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthlyForecastedValue}"  style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!monthly.monthlyForecastedWeightedvalue}"   style="color:black;" rendered="{!IF(( monthly.dateValue < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.monthlyForecastedWeightedvalue}"  style="color:green;" rendered="{!IF(( monthly.dateValue < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!IF(ISNULL(monthlySelectedRevenueRollups) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!currentMonthlyFiscalYear}" var="item" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!item.month}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.month}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!item.schYear}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.schYear}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="-"  style="color:green;margin-left:25%;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column> 
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.scheduleRecRev}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.scheduleRecRevWei}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:pageBlockTable value="{!listOfYearlyWrapper}" var="yearly"  headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                        <apex:column headerValue="Year" width="25%">         
+                            <apex:commandLink onclick="showMonthlyRollUpsFY('{!yearly.yearValue}'); return false;" style="color:black;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) < Year(TODAY())}">
+                                {!yearly.yearValue} 
+                            </apex:commandLink>
+                            <apex:commandLink onclick="showMonthlyRollUpsFY('{!yearly.yearValue}'); return false;" style="color:green;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) >= Year(TODAY())}">
+                                {!yearly.yearValue} 
+                            </apex:commandLink>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Date" width="25%">
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) < Year(TODAY())}">
+                                <apex:param value="{!yearly.dateValue}" />
+                            </apex:outputText>
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.dateValue}" />
+                            </apex:outputText>
+                            <!--<apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(RIGHT(yearly.yearValue,4)) > Year(TODAY())}"/>-->
+                        </apex:column>
+                        
+                        <apex:column headerValue="Actual Revenue" width="25%">
+                            <apex:outputText value="{!yearly.yearlyActualValue}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyActualValue}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) == Year(TODAY())}"/>
+                            <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(RIGHT(yearly.yearValue,4)) > Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue" width="25%">
+                            <apex:outputText value="{!yearly.yearlyForecastedValue}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyForecastedValue}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) >= Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                            <apex:outputText value="{!yearly.yearlyForecastedWeightedvalue}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) < Year(TODAY())}"/>
+                            <apex:outputText value="{!yearly.yearlyForecastedWeightedvalue}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.yearValue,4)) >= Year(TODAY())}"/>
+                        </apex:column>                   
+                    </apex:pageBlockTable>
+                    
+                </apex:pageBlockSection><!-- /Page Block Section for yearly and monthly Revenue -->
+            </apex:pageBlock>
+            
+            <apex:pageBlock rendered="{!NOT(isMultiCurrencyEnabled)}" >
+                
+                <apex:pageBlockSection title="Detail" columns="2" rendered="{!IF(AND(isHavingPermssion,IsHavingFiscalYear), FALSE, TRUE)}">
+                    
+                    <apex:outputPanel rendered="{!IF(NOT(ISNULL(monthlySelectedRevenueRollups)) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!monthlySelectedRevenueRollups}" var="monthly" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!monthly.Month__c}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.Month__c}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!monthly.Year__c}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.Year__c}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Revenue_Date__c}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Revenue_Date__c}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Actual_Revenue__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()),false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue_Weighted__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue_Weighted__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!IF(ISNULL(monthlySelectedRevenueRollups) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!fiscalYearWithSingleCurrency}" var="item" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!item.month}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.month}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!item.schYear}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.schYear}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column> 
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRevWei}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRevWei}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:pageBlockTable value="{!listOfYearlyRollupToInsert}" var="yearly"  headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                        <apex:column headerValue="Year" width="10%">
+                            <apex:commandLink onclick="showMonthlyRollUps('{!yearly.Year__c}'); return false;" style="color:black;" rendered="{!VALUE(yearly.Year__c) < Year(TODAY())}">
+                                {!yearly.Year__c} 
+                            </apex:commandLink>
+                            <apex:commandLink onclick="showMonthlyRollUps('{!yearly.Year__c}'); return false;" style="color:green;" rendered="{!VALUE(yearly.Year__c) >= Year(TODAY())}">
+                                {!yearly.Year__c}
+                            </apex:commandLink>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Date" width="30%">
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"   style="color:black;" rendered="{!VALUE(yearly.Year__c) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Revenue_Date__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"   style="color:green;" rendered="{!VALUE(yearly.Year__c) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Revenue_Date__c}"/>
+                            </apex:outputText>
+                            <!--<apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(yearly.Year__c) > Year(TODAY())}"/>-->
+                        </apex:column>
+                        
+                        <apex:column headerValue="Actual Revenue" width="30%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(yearly.Year__c) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Actual_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!VALUE(yearly.Year__c) == Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Actual_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(yearly.Year__c) > Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue" width="30%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(yearly.Year__c) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!VALUE(yearly.Year__c) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue(Weighted)" width="30%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(yearly.Year__c) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue_Weighted__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!VALUE(yearly.Year__c) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue_Weighted__c}"/>
+                            </apex:outputText>
+                        </apex:column>                   
+                    </apex:pageBlockTable>
+                    
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection title="Detail" columns="2" rendered="{!IF(AND(isHavingPermssion,IsHavingFiscalYear), TRUE, FALSE)}">
+                    
+                    <apex:outputPanel rendered="{!IF(NOT(ISNULL(monthlySelectedRevenueRollups)) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!monthlySelectedRevenueRollups}" var="monthly" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%" >
+                                <apex:outputText value="{!monthly.Month__c}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.Month__c}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()),false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="10%">
+                                <apex:outputText value="{!monthly.Year__c}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}"/>
+                                <apex:outputText value="{!monthly.Year__c}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="10%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Revenue_Date__c}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Revenue_Date__c}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="20%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Actual_Revenue__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:black;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,true,false)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue_Weighted__c}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}" style="color:green;" rendered="{!IF(( monthly.Monthly_Revenue_Date__c < TODAY()) ,false,true)}">
+                                    <apex:param value="{!monthly.Monthly_Forecasted_Revenue_Weighted__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!IF(ISNULL(monthlySelectedRevenueRollups) ,'true', 'false')}">
+                        <apex:pageBlockTable value="{!fiscalYearWithSingleCurrency}" var="item" headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                            
+                            <apex:column headerValue="Month" width="10%">
+                                <apex:outputText value="{!item.month}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.month}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Year" width="15%">
+                                <apex:outputText value="{!item.schYear}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}"/>
+                                <apex:outputText value="{!item.schYear}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Date" width="15%">
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                                <apex:outputText value="{0,date,MM/dd/yyyy}" style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.scheduleDate}" />
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Actual Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                                <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!item.scheduleDate>=TODAY()}"/>
+                            </apex:column> 
+                            
+                            <apex:column headerValue="Forecasted Revenue" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRev}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                            <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!item.scheduleDate<TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRevWei}"/>
+                                </apex:outputText>
+                                <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!item.scheduleDate>=TODAY()}">
+                                    <apex:param value="{!item.totalSchRecRevWei}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    
+                    <apex:pageBlockTable value="{!yearlyRollupsFY}" var="yearly"  headerClass="headerClassStyle" style="text-align:left;overflow:auto;">
+                        <apex:column headerValue="Year" width="25%">         
+                            <apex:commandLink onclick="showMonthlyRollUpsFY('{!yearly.Year__c}'); return false;" style="color:black;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) < Year(TODAY())}">
+                                {!yearly.Year__c} 
+                            </apex:commandLink>
+                            <apex:commandLink onclick="showMonthlyRollUpsFY('{!yearly.Year__c}'); return false;" style="color:green;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) >= Year(TODAY())}">
+                                {!yearly.Year__c} 
+                            </apex:commandLink>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Date" width="25%">
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"   style="color:black;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Revenue_Date__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{0,date,MM/dd/yyyy}"   style="color:green;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Revenue_Date__c}"/>
+                            </apex:outputText>
+                            <!--<apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(RIGHT(yearly.Year__c,4)) > Year(TODAY())}"/>-->
+                        </apex:column>
+                        
+                        <apex:column headerValue="Actual Revenue" width="25%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Actual_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) == Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Actual_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="-" style="color:green;margin-left:25%;"  rendered="{!VALUE(RIGHT(yearly.Year__c,4)) > Year(TODAY())}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue" width="25%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:rgb(22, 24, 22);" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Forecasted Revenue(Weighted)" width="25%">
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:black;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) < Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue_Weighted__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}"  style="color:green;" rendered="{!VALUE(RIGHT(yearly.Year__c,4)) >= Year(TODAY())}">
+                                <apex:param value="{!yearly.Yearly_Forecasted_Revenue_Weighted__c}"/>
+                            </apex:outputText>
+                        </apex:column>                   
+                    </apex:pageBlockTable>
+                    
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+        </apex:pageBlock>
+    </apex:form><!-- /Form -->
+</apex:page>

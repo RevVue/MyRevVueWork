@@ -1,0 +1,31 @@
+<style>
+	.dateFormat {    
+		display : none;
+	}
+
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		right: 0;	
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		background-color: black;
+		opacity: 0.8;
+	}
+	.modalPopUpClass {
+		background-color: white;
+		border-style: solid;
+		border-width: 2px;
+		padding: 10px;
+		position: absolute;
+		z-index: 9999;
+		width: auto; 
+		top: 2%;
+		left : 12%;
+	}
+	.datePicker , #datePicker {
+		z-index:9999;
+	}
+</style>
+    

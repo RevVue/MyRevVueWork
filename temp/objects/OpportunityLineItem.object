@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>Overridden_Rule__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Overridden Rule</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Overriden_Rule_Assignment_Id__c</fullName>
+        <deprecated>false</deprecated>
+        <description>Hold id of rule assignment which rule is stamp.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>It is only to store id to identify rule assignment type.</inlineHelpText>
+        <label>Overriden_Rule Assignment Id</label>
+        <length>18</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Overriden__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF(ISBLANK(Overriden_Rule_Assignment_Id__c) , false,true)</formula>
+        <label>Overriden</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>RevRecOpportunityLineItem__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>RevRecOpportunityLineItem</label>
+        <referenceTo>RevRecOpportunityLineItem__c</referenceTo>
+        <relationshipLabel>Opportunity Product</relationshipLabel>
+        <relationshipName>Opportunity_Product</relationshipName>
+        <required>false</required>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>RevRecRule__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>RevRecRule</label>
+        <lookupFilter>
+            <active>true</active>
+            <filterItems>
+                <field>RevRecRules__c.Active__c</field>
+                <operation>equals</operation>
+                <value>True</value>
+            </filterItems>
+            <isOptional>false</isOptional>
+        </lookupFilter>
+        <referenceTo>RevRecRules__c</referenceTo>
+        <relationshipLabel>Opportunity Product</relationshipLabel>
+        <relationshipName>Opportunity_Product</relationshipName>
+        <required>false</required>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Rule_Assignment_Type__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF(ISBLANK(Overriden_Rule_Assignment_Id__c) , &apos;&apos;, HYPERLINK(&quot;/&quot;&amp;Overriden_Rule_Assignment_Id__c, &quot;[Overriden]&quot;))</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Rule Assignment Type</label>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Rule_Assignment__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Rule Assignment</label>
+        <referenceTo>Rule_Assignment__c</referenceTo>
+        <relationshipLabel>Opportunity Product</relationshipLabel>
+        <relationshipName>Opportunity_Product</relationshipName>
+        <required>false</required>
+        <type>Lookup</type>
+    </fields>
+</CustomObject>

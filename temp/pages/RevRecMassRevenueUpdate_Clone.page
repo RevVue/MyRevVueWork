@@ -1,0 +1,200 @@
+<!--
+    Description     :   This page is for Mass revenue update opportunity of matching criteria
+    
+    Created By      :  
+    
+    Created Date    :   08/01/2020
+    
+    Version         :   V_1.0
+    
+    Revision Log    :   V_1.0 - Created -->
+
+<apex:page controller="RevRecMassRevenueUpdateController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false">
+    <!--
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS0121, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <style>
+        .dateFormat {
+        display: none;
+        }
+    </style> 
+    <apex:form id="form">
+        <div class="slds">
+            
+            <apex:pageMessages />
+            
+            <c:BlockUI />
+            
+            <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+           	
+            <style type="text/css">
+                .custPopup{
+                background-color: rgb(245, 255, 254);
+                z-index: 9999;
+                left: 50%;
+                padding:10px;
+                position: absolute;
+                width: 500px;
+                height : 100px;
+                margin-left: -250px;
+                top:100px;
+                }
+                .popupBackground{
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 9998;
+                }
+                
+            </style>
+            
+            <script type="text/javascript">
+            function callexcel(){
+                window.open("/apex/ProjectedAndActualRevCSV", '_blank');
+            }
+            </script>
+            
+            <apex:outputPanel id="popupToUploadCSV">
+                <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp}"/>
+                <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!displayPopUp}">
+                    <b>Select a file:</b>&nbsp;&nbsp;
+                    <apex:inputFile value="{!csvFileBody}"  filename="{!csvAsString}"/>
+                    <div align="center" style="margin-top:15px;" >
+                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Submit" action="{!importCSVFile}" style="margin-right:5px;"/>
+                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Cancel" action="{!cancelPopup}" />
+                    </div>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="pb">
+            <div class="slds-page-header" role="banner" style="margin-top:5px;background:#32c0f83b;">
+                <h1 class="slds-text-heading--medium slds-p-top-medium">Mass Revenue Update</h1>
+                
+            </div>
+            
+            <div class="slds-grid slds-grid--align-center" style="margin-top:3px;padding:0.5rem;">
+                <apex:commandbutton styleClass="btn slds-button slds-button--neutral" value="Extract" reRender="form" status="waitMsg" onclick="callexcel();" />
+                <apex:commandbutton styleClass="btn slds-button slds-button--neutral" value="Upload" action="{!uploadOppWithProjectedAndActualAmount}" status="waitMsg" reRender="popupToUploadCSV" />
+                <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Show" action="{!showAllOppWithProjectedAndActualAmount}" reRender="form" status="waitMsg" />
+                <apex:commandbutton styleClass="btn slds-button slds-button--neutral" value="Update" action="{!updateAllOppWithProjectedAndActualAmount}" reRender="form" status="waitMsg" />
+            </div>    
+            
+            
+            <div class="container slds-p-around--medium" style="margin-top:3px;">
+                <div class="slds-section-title--divider" style="background:#32c0f83b;">
+                    Criteria
+                </div>
+                
+                <div class="slds-grid slds-wrap slds-form--horizontal">
+                    <div class="slds-col slds-col--padded">   
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Stage </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!opportunity.StageName}" required="false"/>
+                            </div>
+                        </div>       
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Amount From: </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!opportunity.Amount}" required="false"/>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Date Field : </label>
+                            <div class="slds-form-element__control">
+                                <apex:selectList styleClass="slds-select" multiselect="false" size="1" value="{!selectedCriteriaField}">
+                                    <apex:selectOptions value="{!SearchDateOptions}"/>
+                                </apex:selectList>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element">
+                                <apex:outputPanel rendered="{!selectedCriteria = 'Custom'}">
+                                    <label class="slds-form-element__label" > From : </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField styleClass="slds-input" html-placeholder="Select date" value="{!opportunity.REVvue_CreatedDate__c}" required="false" />
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                    </div>
+                    
+                    <div class="slds-col slds-col--padded">
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Type </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!opportunity.Type}" required="false"/>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Amount To: </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!opportunity1.Amount}" required="false"/>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Range : </label>
+                            <div class="slds-form-element__control">
+                                <apex:selectList styleClass="slds-select" value="{!selectedCriteria}" multiselect="false" size="1" label="Select Criteria">
+                                    <apex:actionSupport event="onchange" action="{!changeCriteria}" reRender="pb" status="waitMsg"/>
+                                    <apex:selectOptions value="{!FilterCriteria}"/> 
+                                </apex:selectList>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element">
+                            <apex:outputPanel rendered="{!selectedCriteria = 'Custom'}"> 
+                                <label class="slds-form-element__label" > To : </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" html-placeholder="Select date" value="{!opportunity1.REVvue_CreatedDate__c}" required="false" />
+                                </div>
+                            </apex:outputPanel>     
+                        </div>     
+                    </div>
+                </div>
+                
+                <div class="slds-section-title--divider" style="background:#32c0f83b;">
+                    Single Opportunity Search
+                </div>
+                <div class="slds-grid slds-wrap slds-form--horizontal">
+                    
+                    <div class="slds-col slds-col--padded">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Opportunity Name </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!opportunity.Name}" required="false"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-col slds-col--padded">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" > Account Name </label>
+                            <div class="slds-form-element__control">
+                                <c:LookUpCompoment SObject="{!opportunity}" Field="AccountId"></c:LookUpCompoment>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!(isShow)}">
+                <div class="container slds-p-around--medium" style="margin-top:3px;">
+                    <div class="slds-section-title--divider" style="background:#32c0f83b;">
+                        Table
+                    </div>
+                </div>
+            </apex:outputPanel>
+        </div>
+    </apex:form>-->
+</apex:page>

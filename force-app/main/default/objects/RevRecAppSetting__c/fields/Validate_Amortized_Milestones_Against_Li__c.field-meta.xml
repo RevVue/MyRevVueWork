@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Validate_Amortized_Milestones_Against_Li__c</fullName>
+    <defaultValue>false</defaultValue>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <label>Validate Amortized Milestones Against Li</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

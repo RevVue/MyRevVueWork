@@ -1,0 +1,13 @@
+<apex:page controller="RevRecScheduleSetController" contentType="application/vnd.ms-excel#RevRecOpportunitySchedules.xls">
+    <apex:pageBlock >
+      <apex:pageBlockSection >
+        <apex:pageBlockTable value="{!Schedules}" var="c" >
+          <apex:column value="{!c.Sequence__c}" headerValue="Sequence"/>
+          <apex:column headerValue="Recognized Revenue" value="{!c.RecognizedRev__c }" />
+          <apex:column headerValue="Deferred Revenue"  value="{!c.DeferredRev__c}" />
+          <apex:column value="{!c.Year__c}" headerValue="Year"/>
+          <apex:column value="{!c.Month__c}" headerValue="Month"/>
+        </apex:pageBlockTable>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

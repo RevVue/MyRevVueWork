@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Opportunity__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <deprecated>false</deprecated>
+    <description>This field is used to hold the opportunity which failed during the mass calculation.</description>
+    <externalId>false</externalId>
+    <label>Opportunity</label>
+    <referenceTo>Opportunity</referenceTo>
+    <relationshipLabel>RevView Error Log</relationshipLabel>
+    <relationshipName>RevView_Error_Log</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

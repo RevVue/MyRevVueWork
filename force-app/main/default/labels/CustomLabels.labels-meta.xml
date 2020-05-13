@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>AuthorizationError</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>AuthorizationError</shortDescription>
+        <value>Error: You are not authorized to run the Calculations</value>
+    </labels>
+    <labels>
+        <fullName>Batch_Completion_Message</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Batch Completion Message</shortDescription>
+        <value>Batch_MassRevenueCalculate has been completed.  It processed total</value>
+    </labels>
+    <labels>
+        <fullName>Batch_Starts_Label</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Batch Starts Label</shortDescription>
+        <value>Batch job has been started. You will be get notified via email as soon as it gets completed.</value>
+    </labels>
+    <labels>
+        <fullName>ExecuteBatchActionLabel</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ExecuteBatchActionLabel</shortDescription>
+        <value>Execute Batch</value>
+    </labels>
+    <labels>
+        <fullName>Mass_Revenue_Calculation_Label</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Mass Revenue Calculation Label</shortDescription>
+        <value>Mass Revenue Calculate</value>
+    </labels>
+    <labels>
+        <fullName>Mass_RollUp_Calculate</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Mass RollUp Calculate</shortDescription>
+        <value>Mass RollUp Calculate</value>
+    </labels>
+    <labels>
+        <fullName>No_Record_Found_Label</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>No Record Found Label</shortDescription>
+        <value>No record for this selected criteria</value>
+    </labels>
+    <labels>
+        <fullName>REVENUE_CAN_NOT_EXCEED_OPPTY_PRODUCT_AMOUNT</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>REVENUE CAN NOT EXCEED OPPTY PRODUCT AMOUNT</shortDescription>
+        <value>The revenue you want to recognize until today exceeds the amount of this product in the opportunity. Please verify and correct as appropriate</value>
+    </labels>
+    <labels>
+        <fullName>Records</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Records</shortDescription>
+        <value>records</value>
+    </labels>
+    <labels>
+        <fullName>SELECT_START_AND_END_DATE</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>SELECT START AND END DATE FOR RULE SCREEN</shortDescription>
+        <value>Start Date and End Date should not be blank. Please select at-least one type of Start Date and End Date.</value>
+    </labels>
+    <labels>
+        <fullName>SEQUENCE_TITLE</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>SEQUENCE TITLE</shortDescription>
+        <value>Revenue Transaction</value>
+    </labels>
+    <labels>
+        <fullName>START_AND_END_DATE_NOT_BLANK</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>START AND END DATE NOT BLANK FOR OVERRIDE SCREEN</shortDescription>
+        <value>Start Date and end Date should not be null for Amortize Milestone Rule and End Date must be greater than start date</value>
+    </labels>
+    <labels>
+        <fullName>START_DATE_AND_END_DATE_NOT_BLANK</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>START DATE AND END DATE NOT BLANK FOR OPPORTUNITY PAGE</shortDescription>
+        <value>.Start Date and end Date should not be null for Amortize Milestone Rule and End Date must be greater than start date. Please go back to the Product Rule to fill or adjust  start date or end date.</value>
+    </labels>
+    <labels>
+        <fullName>TRANSACTION_TITLE</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>TRANSACTION TITLE</shortDescription>
+        <value>Revenue Transaction</value>
+    </labels>
+</CustomLabels>

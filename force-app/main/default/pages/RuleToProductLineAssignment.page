@@ -1,0 +1,38 @@
+<apex:page controller="RuleToProductLineAssignmentController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false" action="{!inIt}">
+	
+	<!-- Form -->
+	<apex:form id="form">
+	
+	 <!-- Block UI component -->
+        <c:BlockUI />
+    
+        <!--Page Message  --> 
+        <apex:pageMessages />
+   
+        <!-- Action Status -->
+        <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+        
+		<apex:pageBlock id="pb">
+			
+			<!-- Button section -->
+			<apex:pageBlockButtons location="top">
+				<apex:commandButton action="{!doSave}" value="Save" reRender="form" status="waitMsg"/> 
+			</apex:pageBlockButtons>
+			
+			<!-- Page Block section -->
+			<apex:pageBlockSection id="pbs" columns="1"> 
+			
+				<!-- Table -->
+				<apex:pageBlockTable value="{!productFamilyRules}" var="item" rendered="{!productFamilyRules.size > 0}">
+	                <apex:column headerValue="Product Family">
+	                	<apex:outputlabel value="{!item.Name}" />
+	                </apex:column>
+	                
+	                <apex:column headerValue="Rule">
+	                    <apex:inputField value="{!item.RevRecRule__c}"/>    
+	                </apex:column> 
+	            </apex:pageBlockTable> 
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

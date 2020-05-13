@@ -1,0 +1,91 @@
+<apex:page controller="RevRecScheduleSetControllerCopy" contentType="application/vnd.ms-excel#RevRecOpportunitySchedules.xls">
+    <apex:pageBlock >
+      <apex:pageBlockSection columns="1" >
+          <apex:pageBlockTable rendered="{!isMultiCurrencyEnabled}" value="{!revrecSchedules}" var="item">
+              <apex:column headervalue="{!$Label.appropozsln__sequence_title}" value="{!item.sequence}" style="text-align:right;"/>
+              <apex:column headerValue="Recognized Revenue" value="{!item.scheduleRecRev}" style="text-align:right;"/>
+              <apex:column headerValue="Recognized Revenue(Cummulative)" value="{!item.scheduleRecRevCumulative}" style="text-align:right;"/>
+              <apex:column headerValue="Recognized Revenue (Weighted)" value="{!item.scheduleRecRevWei}" style="text-align:right;"/>
+              <apex:column headerValue="Recognized Revenue (Weighted)(Cummulative)" value="{!item.schRecRevWeiCumulative}" style="text-align:right;"/>
+              <apex:column headerValue="Projected Revenue (Cummulative)" value="{!item.schForecastedRevCumulative}" style="text-align:right;"/>
+              <apex:column headerValue="Projected Revenue (Weighted)" value="{!item.schForecastedRevWei}" style="text-align:right;"/>
+              <apex:column headerValue="Deferred Revenue" value="{!item.scheduleDeferred}" style="text-align:right;"/>
+              <apex:column headerValue="Deferred Revenue (Weighted)" value="{!item.scheduleDeferredWei}" style="text-align:right;"/>
+              <!-- <apex:column headerValue="Total Recognized" value="{!item.scheduleRecRevTotal}"/> -->
+              <apex:column headerValue="Year" value="{!item.schYear}" style="text-align:right;"/>
+              <apex:column headerValue="Month" value="{!item.month}" style="text-align:right;"/>
+	       </apex:pageBlockTable>
+          
+          <!-- apex variable to show row number for schedules when multicurrency is disable -->
+          <apex:variable value="{!1}" var="rowNum"/>
+          
+          <apex:pageBlockTable rendered="{!NOT(isMultiCurrencyEnabled)}" value="{!scheduleWrapper}" var="item">
+              <apex:column headervalue="{!$Label.appropozsln__sequence_title}" style="text-align:right;">{!rowNum}
+               		<apex:variable var="rowNum" value="{!rowNum + 1}"/> 
+              </apex:column>
+              
+              <apex:column headerValue="Recognized Revenue" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.schedule.RecognizedRev__c}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Recognized Revenue (Cummulative)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.cumulativeRecognized}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Recognized Revenue (Weighted)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.schedule.RecRevWei__c}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Recognized Revenue (Weighted)(Cummulative)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.recognizedWeiCumulative}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Projected Revenue (Cummulative)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.forecastedCumulative}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Projected Revenue (Weighted)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.schedule.ForeRevWei__c}"/>
+                  </apex:outputText>
+              </apex:column>
+                    
+              <apex:column headerValue="Deferred Revenue" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.schedule.DeferredRev__c}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <apex:column headerValue="Deferred Revenue (Weighted)" style="text-align:right;">
+                  <apex:outputText value="{!currencyFormate}{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.schedule.DefReWei__c}"/>
+                  </apex:outputText>
+              </apex:column>
+              
+              <!-- <apex:column headerValue="Total Recognized">
+                  <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                      <apex:param value="{!item.RecognizedRevTotal__c}"/>
+                  </apex:outputText>
+              </apex:column>
+               -->
+              <apex:column headerValue="Year">
+                  <apex:outputText value="{!item.schedule.RecYear__c}" style="text-align:right;"/>
+              </apex:column>
+              
+              <apex:column headerValue="Month">
+                  <apex:outputText value="{!item.schedule.RecMonth__c}" style="text-align:right;"/>
+              </apex:column>
+	       </apex:pageBlockTable>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

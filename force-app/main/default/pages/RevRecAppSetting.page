@@ -1,0 +1,243 @@
+<apex:page controller="RevRecAppSettingController">
+	<apex:form >
+    	<apex:pageBlock title="Application Settings" mode="edit">
+        	<apex:pageMessages />
+	        <apex:pageBlockButtons >
+		        <apex:commandButton action="{!save}" value="Save"/>
+		        <apex:commandButton action="{!cancel}" value="Cancel"/>
+	    	</apex:pageBlockButtons>
+      		<apex:pageBlockSection title="Selected values used as criteria to evaluate which opportunities to process" columns="1">
+        		<apex:panelGrid columns="4" id="type" cellspacing="4">
+		            <apex:outputText value="Opportunity Type:" ></apex:outputText>        
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available <br/>
+		                <apex:selectList id="typeSel1" value="{!leftOpportunityTypeSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!UnSelectedOpportunityType}" />
+		                </apex:selectList>
+		            </apex:panelGroup> 
+		            <apex:panelGroup >
+		                    &nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityTypeSelectClick}" reRender="type"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityTypeUnSelectClick}" reRender="type"/>
+		                    </apex:image>
+		            </apex:panelGroup>
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selected <br/>            
+		                <apex:selectList id="typeSel2" value="{!rightOpportunityTypeSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!SelectedOpportunityType}" />
+		                </apex:selectList>
+		            </apex:panelGroup>              
+       			</apex:panelGrid>
+     			</apex:pageBlockSection>
+      			<apex:pageBlockSection title="Select Opportunity Stage(s) - (Selected values used as criteria to evaluate which opportunities to process)" columns="1" showHeader="0">
+		        <apex:panelGrid columns="4" id="stage">
+		            <apex:outputText style="width:580px;" >Opportunity Stage:</apex:outputText>        
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available <br/>
+		                <apex:selectList id="typeSel" value="{!leftOpportunityStageSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!UnSelectedOpportunityStage}" />
+		                </apex:selectList>
+		            </apex:panelGroup>
+		            <apex:panelGroup >
+		                    &nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityStageSelectClick}" reRender="stage"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityStageUnSelectClick}" reRender="stage"/>
+		                    </apex:image>
+		            </apex:panelGroup>
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selected <br/>            
+		                <apex:selectList id="sel2" value="{!rightOpportunityStageSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!SelectedOpportunityStage}"/>
+		                </apex:selectList>
+		            </apex:panelGroup>              
+		        </apex:panelGrid>
+      		</apex:pageBlockSection>
+            <!-- Code added on 09/13/2016 Opportunity Record Type support -->
+            <apex:pageBlockSection title="Select Opportunity Record Type(s) - (Selected values used as criteria to evaluate which opportunities to process)" columns="1" showHeader="0" rendered="{!showRecordTypeSection}">
+		        <apex:panelGrid columns="4" id="stage">
+		            <apex:outputText style="width:580px;" >Opportunity RecordType:</apex:outputText>        
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available <br/>
+		                <apex:selectList id="typeSel" value="{!leftOpportunityRecordTypeSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!UnSelectedOpportunityRecordType}" />
+		                </apex:selectList>
+		            </apex:panelGroup>
+		            <apex:panelGroup >
+		                    &nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityRecordTypeSelectClick}" reRender="stage"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!OpportunityRecordTypeUnSelectClick}" reRender="stage"/>
+		                    </apex:image>
+		            </apex:panelGroup>
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selected <br/>            
+		                <apex:selectList id="sel2" value="{!rightOpportunityRecordTypeSelected}" multiselect="true" style="width:200px" size="5">
+		                    <apex:selectOptions value="{!SelectedOpportunityRecordType}" />
+		                </apex:selectList>
+		            </apex:panelGroup>              
+		        </apex:panelGrid>
+      		</apex:pageBlockSection>
+      		<apex:pageBlockSection title="Selected date(s) will be available for use when defining Rules" columns="1">
+		        <apex:panelGrid columns="4" id="abcd">
+		            <apex:outputText >Revenue Recognition Start Date:</apex:outputText>        
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available <br/>
+		                <apex:selectList id="sel1" value="{!leftStartSelected}" multiselect="true" style="width:250px" size="7">
+		                    <apex:selectOptions value="{!UnSelectedStartDate}" />
+		                </apex:selectList>
+		            </apex:panelGroup>
+		            <apex:panelGroup >
+		                    &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!StartSelectClick}" reRender="abcd"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!StartUnSelectClick}" reRender="abcd"/>
+		                    </apex:image>
+		            </apex:panelGroup>
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selected <br/>            
+		                <apex:selectList id="sel2" value="{!rightStartSelected}" multiselect="true" style="width:250px" size="7">
+		                    <apex:selectOptions value="{!SelectedStartDate}" />
+		                </apex:selectList>
+		            </apex:panelGroup>              
+		        </apex:panelGrid>
+   			  </apex:pageBlockSection>
+		      <apex:pageBlockSection title="Selected date(s) will be available for use when defining Rules" columns="1" showHeader="0">
+		        <apex:panelGrid columns="4" id="endDate" cellspacing="3">
+		            <apex:outputText >Revenue Recognition End Date:</apex:outputText>        
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available <br/>
+		                <apex:selectList id="endSel1" value="{!leftEndSelected}" multiselect="true" style="width:250px" size="7">
+		                    <apex:selectOptions value="{!UnSelectedEndDate}" />
+		                </apex:selectList>
+		            </apex:panelGroup>
+		            <apex:panelGroup >
+		                    &nbsp;<br/>&nbsp;<br/>&nbsp;<br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'RightArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!EndSelectClick}" reRender="endDate"/>
+		                    </apex:image>
+		                    <br/><br/>
+		                    <apex:image value="{!URLFOR($Resource.images, 'LeftArrow.gif')}">
+		                        <apex:actionSupport event="onclick" action="{!EndUnSelectClick}" reRender="endDate"/>
+		                    </apex:image>
+		             </apex:panelGroup>
+		            <apex:panelGroup > 
+		                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selected <br/>
+		                <apex:selectList id="endSel2" value="{!rightEndSelected}" multiselect="true" style="width:250px" size="7">
+		                    <apex:selectOptions value="{!SelectedEndDate}" />
+		                </apex:selectList>
+		             </apex:panelGroup>
+		         </apex:panelGrid>
+		      </apex:pageBlockSection>
+		      <apex:pageBlockSection title="Select the time of month for Revenue Recognition Month to move to the next month" columns="2">
+		        <apex:selectRadio value="{!AppSettings.Time_of_Month_Selection_Types__c}" id="timeOfMonthType" layout="pageDirection" title="Select Revenue Recognition for the month end type">
+		            <apex:actionSupport event="onclick" action="{!TimeOfMonthSelectionTypes}" rerender="detail" />
+		            <apex:selectOptions value="{!TimeofMonthSelectOptions}"/>
+		        </apex:selectRadio>
+        
+		        <apex:outputPanel id="detail">
+		                <apex:outputPanel rendered="{!showDateOfMonth}">
+		                    <apex:outputLabel value="Date of month setting: "/>
+		                    <apex:selectList value="{!AppSettings.Certain_date_of_month__c}" id="DateOfMonth" size="1"> 
+		                        <apex:selectOptions value="{!MonthDaySelectOptions}" />
+		                    </apex:selectList>
+		                </apex:outputPanel>
+		                
+		                <apex:outputPanel rendered="{!showCertainWeekDay}">
+		                    <apex:outputLabel value="Week and day setting: "/>
+		                    <apex:selectList value="{!AppSettings.Certain_weekday__c}" id="CertainWeekDay" size="1"> 
+		                         <apex:selectOption itemValue="1st" itemLabel="1st"/>
+		                         <apex:selectOption itemValue="2nd" itemLabel="2nd"/>
+		                         <apex:selectOption itemValue="3rd" itemLabel="3rd"/>
+		                         <apex:selectOption itemValue="4th" itemLabel="4th"/>
+		                         <apex:selectOption itemValue="Last" itemLabel="Last"/>
+		                    </apex:selectList>
+		                    &nbsp;
+		                      <apex:selectList value="{!AppSettings.Certain_weekday_day__c}" id="CertainWeekDayDay" size="1"> 
+		                         <apex:selectOption itemValue="Monday" itemLabel="Monday"/>
+		                         <apex:selectOption itemValue="Tuesday" itemLabel="Tuesday"/>
+		                         <apex:selectOption itemValue="Wednesday" itemLabel="Wednesday"/>
+		                         <apex:selectOption itemValue="Thursday" itemLabel="Thursday"/>
+		                         <apex:selectOption itemValue="Friday" itemLabel="Friday"/>
+		                         <apex:selectOption itemValue="Saturday" itemLabel="Saturday"/>
+		                         <apex:selectOption itemValue="Sunday" itemLabel="Sunday"/>
+		                    </apex:selectList>
+		                    <apex:outputLabel value=" of month"/>
+		                </apex:outputPanel>
+		        </apex:outputPanel>
+      	</apex:pageBlockSection>
+      	<apex:pageBlockSection title="Select Which Date in the Month to Use for the Transaction Date for each Month" columns="2">
+	        <apex:selectRadio value="{!AppSettings.Time_of_Month_Selection_Types_tr__c}" id="timeOfMonthTypeTr" layout="pageDirection" title="Select Revenue Recognition for the month end type">
+	            <apex:actionSupport event="onclick" action="{!TimeOfMonthSelectionTypesTr}" rerender="detailTr" />
+	            <apex:selectOptions value="{!TimeofMonthSelectOptions}"/>
+	        </apex:selectRadio>
+        
+        	<apex:outputPanel id="detailTr">
+	                <apex:outputPanel rendered="{!showDateOfMonthTr}">
+	                    <apex:outputLabel value="Date of month setting: "/>
+	                    <apex:selectList value="{!AppSettings.Certain_date_of_month_tr__c}" id="DateOfMonthTr" size="1"> 
+	                        <apex:selectOptions value="{!MonthDaySelectOptions}" />
+	                    </apex:selectList>
+	                </apex:outputPanel>
+                
+	                <apex:outputPanel rendered="{!showCertainWeekDayTr}">
+	                    <apex:outputLabel value="Week and day setting: "/>
+	                    <apex:selectList value="{!AppSettings.Certain_weekday_tr__c}" id="CertainWeekDayTr" size="1"> 
+	                         <apex:selectOption itemValue="1st" itemLabel="1st"/>
+	                         <apex:selectOption itemValue="2nd" itemLabel="2nd"/>
+	                         <apex:selectOption itemValue="3rd" itemLabel="3rd"/>
+	                         <apex:selectOption itemValue="4th" itemLabel="4th"/>
+	                         <apex:selectOption itemValue="Last" itemLabel="Last"/>
+	                    </apex:selectList>
+	                    &nbsp;
+	                      <apex:selectList value="{!AppSettings.Certain_weekday_day_tr__c}" id="CertainWeekDayDay" size="1"> 
+	                         <apex:selectOption itemValue="Monday" itemLabel="Monday"/>
+	                         <apex:selectOption itemValue="Tuesday" itemLabel="Tuesday"/>
+	                         <apex:selectOption itemValue="Wednesday" itemLabel="Wednesday"/>
+	                         <apex:selectOption itemValue="Thursday" itemLabel="Thursday"/>
+	                         <apex:selectOption itemValue="Friday" itemLabel="Friday"/>
+	                         <apex:selectOption itemValue="Saturday" itemLabel="Saturday"/>
+	                         <apex:selectOption itemValue="Sunday" itemLabel="Sunday"/>
+	                    </apex:selectList>
+	                    <apex:outputLabel value=" of month"/>
+	                </apex:outputPanel>
+        		</apex:outputPanel>
+      		</apex:pageBlockSection>
+      		
+      		<!-- Code added 11/30/2015 - As per to apply close date validation -->
+      		<apex:pageBlockSection title="Validate that the opportunity Close Date precedes revenue dates" collapsible="false" >
+      			<apex:inputCheckbox Value="{!AppSettings.Is_Closed_Date_Validation__c}" />
+      		</apex:pageBlockSection>
+      		
+      		<!-- Code added 06/23/2017 - As per to apply amortize milestobe validation -->
+      		<apex:pageBlockSection title="Amortized milestone Validation" collapsible="false" >
+      			
+      			<apex:pageBlockSectionItem >
+      				Validate Amortized Milestones Against Line Item
+      				<apex:inputCheckbox Value="{!AppSettings.Validate_Amortized_Milestones_Against_Li__c}" />
+      			</apex:pageBlockSectionItem>
+      		</apex:pageBlockSection>
+      		
+      		<!-- Code added 05/25/2018 - As per to apply Past Schedule Deferred with 0.00 value -->
+            <apex:pageBlockSection title="Opportunity Chart Preference Default">
+				<apex:selectRadio label="" value="{!AppSettings.Chart_Pref__c}" id="chartPref" layout="pageDirection" title="Opportunity Chart Preference Default">
+		            <apex:actionSupport event="onclick" action="{!chartPreferenceToShow}" rerender="detail" />
+		            <apex:selectOptions value="{!ChartPreference}"/>
+		        </apex:selectRadio>
+            </apex:pageBlockSection>
+    	</apex:pageBlock>
+	</apex:form>
+</apex:page>

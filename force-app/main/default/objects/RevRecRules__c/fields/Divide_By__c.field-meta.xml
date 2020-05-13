@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Divide_By__c</fullName>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <label>Divide By</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Divide Evenly Between Start and End Dates</fullName>
+                <default>false</default>
+                <label>Divide Evenly Between Start and End Dates</label>
+            </value>
+            <value>
+                <fullName>Divide Evenly Between Start and End Dates - Prorate First and Last Periods</fullName>
+                <default>false</default>
+                <label>Divide Evenly Between Start and End Dates - Prorate First and Last Periods</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

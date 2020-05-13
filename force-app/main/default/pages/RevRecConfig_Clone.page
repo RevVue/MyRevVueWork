@@ -1,0 +1,86 @@
+<apex:page id="mainpage">    
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS0121, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.RevVIEWSource_Lightning, 'JS/Jquery.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.RevVIEWSource_Lightning, 'JS/Appiphony_moment.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.RevVIEWSource_Lightning, 'JS/jquery.aljs-all.js')}"/>
+    <style>
+        @media all and (max-width: 769px)  {
+            .slds-tabs--default__nav {
+                display: block !important; 
+            }
+        }
+        @media all and (min-width: 48em) { 
+            .slds .slds-tabs--default__link { 
+                padding: 0 6px;
+            }
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('[data-aljs="tabs"]').tabs();
+        });
+    </script>
+    <div class="slds">
+        <c:BlockUI />
+        
+        <!-- Code is added on 07/16/2016 - FEATURE # 8: Add links the assignment rule on oppty -->
+        <div class="slds-tabs--default" data-aljs="tabs">
+            <ul class="slds-tabs--default__nav" role="tablist">
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-default-1" data-aljs-show="tab-default-1">Rules</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-2" data-aljs-show="tab-default-2">Rule to Product Assignment</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-3" data-aljs-show="tab-default-3">Rule to Product Family Assignment</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="#" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-4" data-aljs-show="tab-default-4">Rule Assignment</a></li>                
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="javascript:void(0)" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-default-5" data-aljs-show="tab-default-5">Application Settings</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="javascript:void(0)" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-6" data-aljs-show="tab-default-6">Mass Calculate</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="javascript:void(0)" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-7" data-aljs-show="tab-default-7">Mass Rollup Calculate</a></li>
+              <!--  <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="javascript:void(0)" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-default-8" data-aljs-show="tab-default-8">Mass Revenue Update</a></li>-->
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="http://www.appropoz.com" target="_self" >About</a></li>
+                <li class="slds-tabs--default__item slds-text-heading--label" role="presentation"><a class="slds-tabs--default__link" href="https://na14.salesforce.com/sfc/p/d0000000flal8h.eg8VPWUFlu1YXurfgCaxktB4" role="tab" tabindex="-9" aria-selected="false" aria-controls="tab-default-9" data-aljs-show="tab-default-9" target="_self">Help</a></li>
+            </ul>
+            <div id="tab-default-1" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                <apex:include pageName="RevRecRule_Clone" id="RulePageTab" /> 
+            </div> 
+            <div id="tab-default-2" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                <apex:include pageName="RevRecProductList_Clone" id="ProductListPage" />  
+            </div>
+            <div id="tab-default-3" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                <apex:include pageName="RuleToProductLineAssignment_Clone" id="lineProductPage"/>
+            </div>
+            
+            <div id="tab-default-4" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                <apex:include pageName="RuleAssignment_Clone" id="RuleAssg"/>
+            </div> 
+            
+            <div id="tab-default-5" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                <apex:include pageName="RevRecAppSetting_Clone"/>
+            </div>
+
+            <div id="tab-default-6" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                 <apex:include pageName="MassRevenueCalculate_Clone1" />
+            </div>
+
+             <div id="tab-default-7" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                 <apex:include pageName="MassRollUpCalculate_Clone" />
+            </div>
+<!--
+            <div id="tab-default-8" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:image value="{!URLFOR($Resource.images, 'REV_Log1.png')}"/>
+                 <apex:include pageName="RevRecMassRevenueUpdate_Clone" />
+            </div>
+-->
+            <div id="tab-default-9" class="slds-tabs--default__content slds-hide" role="tabpanel">
+                <apex:iframe src="{!$Resource.HelpDocument}"/>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- <apex:includeScript value="{!URLFOR($Resource.Resource, 'jquery/jquery.min.js')}"/> -->
+</apex:page>

@@ -1,0 +1,90 @@
+<apex:page controller="RevRecScheduleSetController">
+	<style>
+	.rt{text-align:right;}
+	</style>
+	<apex:form >
+	    
+	    <apex:pageBlock title="Revenue Recognition Schedules - {!opportunity.Name}"> 
+	      
+	      <apex:pageBlockButtons location="top">
+	        <img src="{!URLFOR($Resource.images, 'REV_Log.png')}" />  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	        <apex:commandButton action="{!cancel}" value="Back to Opportunity"/>
+	        <apex:commandButton action="{!ExportToExcel}" value="Export to Excel"/>
+	      </apex:pageBlockButtons>
+	     
+	      <apex:pageMessages />
+	      
+	      <apex:pageBlockSection title="Summary"  columns="1" >
+	      	<apex:panelGrid columns="5" id="theid"  width="1000px"> 
+	        	<apex:outputText value="Today"></apex:outputText>
+	            <apex:outputText value="Total Opportunity"></apex:outputText>
+	            <apex:outputText value="Total Recognized"></apex:outputText>
+	            <apex:outputText value="Total Deferred"></apex:outputText>
+	            <apex:outputText value="Total Residual"></apex:outputText>
+                
+	            <apex:outputField value="{!opp.CloseDate}" />
+	            <apex:outputText value="{!oppTotalOpportunity}"  rendered="{!isMultiCurrencyEnabled}"/>            
+	            <apex:outputText value="${0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+	                <apex:param value="{!Opportunity.REVvue_TotalOpportunity__c }"/>
+	            </apex:outputText>
+				<apex:outputText value="{!oppTotalRecognized}"  rendered="{!isMultiCurrencyEnabled}"/>            
+	            <apex:outputText rendered="{!NOT(isMultiCurrencyEnabled)}" value="${0, number, ###,###,###,##0.00}">
+	                 <apex:param value="{!Opportunity.REVvue_TotalRecognized__c }"/>
+	            </apex:outputText>        
+	            <apex:outputText value="{!oppTotalDeferred}"  rendered="{!isMultiCurrencyEnabled}"/>            
+	            <apex:outputText value="${0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}"> 
+	                 <apex:param value="{!Opportunity.REVvue_TotalDeferred__c }"/>
+	            </apex:outputText>           
+	            <apex:outputText value="{!oppTotalResidual}"  rendered="{!isMultiCurrencyEnabled}"/>        
+	            <apex:outputText value="${0, number, ###,###,###,##0.00}" rendered="{!NOT(isMultiCurrencyEnabled)}">
+	                 <apex:param value="{!Opportunity.REVvue_TotalResidual__c}"/>
+	            </apex:outputText>
+	        </apex:panelGrid>
+	      </apex:pageBlockSection>
+	      
+	      <apex:pageBlockSection title="Detail" columns="1"  >
+	      	<apex:pageBlockTable value="{!Schedules}" var="c" style="width:1000px;text-align:right" headerClass="rt" rendered="{!NOT(isMultiCurrencyEnabled)}" >
+	        	<apex:column value="{!c.Sequence__c}" headerValue="{!$Label.appropozsln__sequence_title}" />
+	          	 <apex:column headerValue="Recognized Revenue"  >
+                  	 <apex:outputText value="${0, number, ###,###,###,##0.00}">
+                      	 <apex:param value="{!c.RecognizedRev__c }"/> 
+                       </apex:outputText>
+                 </apex:column>
+                 <apex:column headerValue="Deferred Revenue"  >
+                  	 <apex:outputText value="${0, number, ###,###,###,##0.00}">
+                      	 <apex:param value="{!c.DeferredRev__c}"/> 
+                       </apex:outputText>
+                 </apex:column>
+                 <apex:column headerValue="Total Recognized"  >
+                  	 <apex:outputText value="${0, number, ###,###,###,##0.00}">
+                      	 <apex:param value="{!c.RecognizedRevTotal__c }"/> 
+                       </apex:outputText>
+                 </apex:column>
+	          	<apex:column value="{!c.Year__c}" headerValue="Year"/>
+	          	<apex:column value="{!c.Month__c}" headerValue="Month"/>
+	        </apex:pageBlockTable>
+	        
+	        <apex:pageBlockTable rendered="{!isMultiCurrencyEnabled}" value="{!revrecSchedules}" var="item" headerClass="rt" style="width:1000px;text-align:right">
+	        	<apex:column headervalue="{!$Label.appropozsln__sequence_title}">
+	        		<apex:outputText value="{!item.sequence}" />
+	        	</apex:column>
+	        	<apex:column headerValue="Recognized Revenue">
+	        		<apex:outputText value="{!item.scheduleRecRev}" />
+	        	</apex:column>
+	        	<apex:column headerValue="Deferred Revenue">
+	        		<apex:outputText value="{!item.scheduleDeferred}" />
+	        	</apex:column>
+	        	<apex:column headerValue="Total Recognized">
+	        		<apex:outputText value="{!item.scheduleRecRevTotal}" />
+	        	</apex:column>
+	        	<apex:column headerValue="Year">
+	        		<apex:outputText value="{!item.schYear}"/>
+	        	</apex:column>
+	        	<apex:column headerValue="Month">
+	        		<apex:outputText value="{!item.month}"/>
+	        	</apex:column>
+	        </apex:pageBlockTable>
+	      </apex:pageBlockSection>
+	    </apex:pageBlock>
+	</apex:form>
+</apex:page>

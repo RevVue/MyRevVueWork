@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rule_Assignment_Type__c</fullName>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <formula>IF(ISBLANK(Overriden_Rule_Assignment_Id__c) , &#39;&#39;, HYPERLINK(&quot;/&quot;&amp;Overriden_Rule_Assignment_Id__c, &quot;[Overriden]&quot;))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Rule Assignment Type</label>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

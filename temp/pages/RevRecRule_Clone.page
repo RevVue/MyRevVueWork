@@ -1,0 +1,1006 @@
+<apex:page controller="RevRecRuleController" id="page">
+    
+    <!-- Add styles on the pagge  -->
+    <apex:stylesheet value="{!URLFOR($Resource.RevViewResources,'CSS/productRuleCSS.css')}"/>
+
+    <script type="text/javascript"> 
+    function MoveToTop() {
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    }
+    $(document).ready(function(){
+       overridePageMessages();    
+    });
+        
+    function overridePageMessages(){    
+        var textureEffect = '';
+        //Uncomment below line for texture effect on page messages
+        //textureEffect = 'slds-theme--alert-texture';
+                     
+        $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+        $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+        $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+        $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+                         
+        $('.errorM3').removeClass('errorM3'); 
+        $('.confirmM3').removeClass('confirmM3'); 
+        $('.infoM3').removeClass('infoM3');   
+        $('.warningM3').removeClass('warningM3');  
+    }
+    function confirmRecognitionType(c, d) { 
+        if(d != ''){
+            var a = confirm('All related opptys will be recalculated using the new rule, are you sure you want to proceed?');
+            if(a == true) 
+                chnageRType();
+            else {
+                var str = document.getElementsByName("mainpage:RulePageTab:page:form:sr");
+                for(var i=0; i< str.length;  i++) {
+                    if(str[i].value == document.getElementById('mainpage:RulePageTab:page:form:selected').value) {
+                        str[i].checked = true;
+                        c.checked = false;  
+                    }
+                }
+            }
+        }else   
+            chnageRType();
+    } 
+    function saveMileStone() {              
+        saveMiles();
+    }
+    //This method is used on Remove category button onclick  
+    function checkSelected(listSize, type, isSplit) {
+        console.log('listSize -->'+listSize+'type-->'+type);
+        if(listSize == 0) {
+            alert('No any category available to remove.');
+        }else {
+            
+             //Variables
+            /** var preFix = '';
+            var suffix = '';
+            var  counter = 0;
+            
+            if(type == 'Blended Revenue' && isSplit != 'Split' ) {
+            preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repeat:';
+            suffix = ':firstChkbox';
+            }else if(type == 'Milestone') {
+            preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repeat1:';
+            suffix = ':firstCheckbox';
+            }else if (type == 'Blended Revenue' && isSplit == 'Split') {
+            preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repet2:';
+            suffix = ':firstChkbox1';
+            }
+            
+            //Loop over wrapper size 
+            for(i =0; i < parseInt(listSize) ; i++) {
+            var idP = preFix + i + suffix;
+            
+            //Checking for selected value
+            if(document.getElementById(idP).checked == true)
+            counter = 1; 
+            } **/
+            //Calling remove category method
+        
+            if(type == 'Blended Revenue' && isSplit != 'Split') { 
+                removeCat();
+            } else if(type == 'Milestone' ) {
+                removeMile();
+            }else if (type == 'Blended Revenue' && isSplit == 'Split') {
+                removeSplitCat();
+            }
+                return true;
+            
+            }
+        
+            if(type == 'Milestone' )
+                checkForDetele() ;
+        }
+        //This method is used on Add category button onClick
+        function checkSelected1(listSize, type, isSplit) {
+        console.log('this.listSize -->'+listSize+'type-->'+type);
+            if(listSize == 0) {
+                if(type == 'Blended Revenue' && isSplit != 'Split')
+                    addCat();
+                else if(type == 'Milestone' ) 
+                    addMile();
+                    else if(type == 'Blended Revenue' && isSplit == 'Split') 
+                        addSplitCat();
+            }else {
+                
+                /** var preFix = '';
+                var suffix = '';
+                var counter = 0;
+                
+                if(type == 'Blended Revenue'  && isSplit != 'Split') {
+                preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repeat:';
+                suffix = ':firstChkbox';
+                }else if(type == 'Milestone') {
+                preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repeat1:';
+                suffix = ':firstCheckbox';
+                }   else if(type == 'Blended Revenue' && isSplit == 'Split') {
+                preFix = 'mainpage:RulePageTab:page:form:detailSession:pbs:repet2:';
+                suffix = ':firstChkbox1';
+                }   
+                
+                for(i =0; i < parseInt(listSize) ; i++) {
+                var idP = preFix + i + suffix;
+                if(document.getElementById(idP).checked == true)
+                counter = 1;
+                } **/
+                
+                if(type == 'Blended Revenue' && isSplit != 'Split') 
+                    addCat();
+                else if(type == 'Milestone')
+                    addMile();
+                    else if (type == 'Blended Revenue' && isSplit == 'Split')
+                        addSplitCat();
+                
+                return true;
+            }
+            
+            //Checking for milestone type and delete selected
+            if(type == 'Milestone')
+                checkForDetele();
+        }
+    </script>
+    
+    <script type="text/javascript">
+    var $k = jQuery.noConflict();
+    function checkForDetele() {
+        var indexString = '';
+        $k('#milestoneTable').find('tr').each(function(){
+            if($k(this).find('.isDelete').is(':checked')) {
+                indexString += $k(this).find('.isDelete').parent().parent().parent().parent().attr('deleteIndex') + ',';
+            }
+        }); 
+        document.getElementById('mainpage:RulePageTab:page:form:indexStringId').value = indexString;  
+    }
+    
+    //This method is used to open popup window
+    function showSplitPopup(row) {
+    
+        console.log('check if popup called :: '); 
+        $k(".modalPopUpClass").show();   
+        
+        $k("#blockUIDiv").show();
+        $k(".ui-icon-closethick").bind('click', function() {
+            $k("#blockUIDiv").hide();
+            $k("#mainpage\\:RulePageTab\\:page\\:form\\:detailSession\\:pbs\\:splitDiv").dialog("close");
+            
+        });
+    }
+    
+    function closePopUp() {
+        $k("#blockUIDiv").hide();
+        $k(".modalPopUpClass").hide();
+    }
+    
+    </script>
+    <style>
+        .modalPopUpClass { 
+           /* width: 85%; */
+            margin-top: 0%;
+            margin-left:-9%;
+            position: absolute !important; 
+            left: 20% !important;
+            top: 0% !important;
+        }
+        
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            right: 0;   
+            bottom: 0;
+            left: 0;
+            z-index: 0;
+            background-color: black;
+            opacity: 0.8;
+        }
+        .boxSize {
+            float: left;
+            width: 100%;
+        }
+        .customSelectList {
+            background-color: white;
+            color: #16325c;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            min-height: 34px;
+        }
+        .msgIcon {
+            display: none!important
+        }
+        .customMessage * {
+            color: #fff!important
+        }
+        .customMessage {
+            margin: 5px 0!important;
+            max-width: 1280px;
+            opacity: 1!important;
+            width: 100%;
+            font-size: 12px;
+            border: 0px;
+            padding-left: 10px;
+        }
+        .message {
+            /* opacity: .1*/
+            background-color : rgba(255, 0, 0, 0.57);
+        }
+        .datePicker, #datePicker {
+            left : 22% !important;
+        }
+    </style>
+    
+    <!-- Page message -->
+    <apex:pageMessages />
+    
+    <!-- Apex form -->
+    <apex:form id="form">
+        
+        <a id="detailAnchor">&nbsp;</a>
+        
+        <!-- Action Status -->
+        <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg" />
+        <apex:actionFunction name="chnageRType" action="{!ChangeRecognitionTypeOptions}" rerender="detailSession" />
+        <apex:actionFunction name="saveMiles" action="{!saveMilesOnBlur}" rerender="rd1,rd2,rd3,rdp1,rdp2,rdp3" status="waitMsg" />
+        <apex:actionFunction name="removeCat" action="{!removeCategory}" reRender="blendedDetail" status="waitMsg" />
+        <apex:actionFunction name="addCat" action="{!addCategory}" reRender="blendedDetail" status="waitMsg" />
+        <apex:actionFunction name="removeMile" action="{!removeMilestone}" reRender="milestoneDetail" status="waitMsg" />
+        <apex:actionFunction name="addMile" action="{!addMilestone}" reRender="milestoneDetail" status="waitMsg" />
+        
+        <!-- Code added - 04/04/2016 - As per Split template creation on default rule level --> 
+        <apex:actionFunction name="doSplit"  rerender="splitDivData,blend" status="waitMsg" onComplete="showSplitPopup('{!lineItemRow}');" action="{!doSplitCategories}">   
+            <apex:param value=""  assignTo="{!categoryToBeSplit}" name="abc"/> 
+            <apex:param value=""  assignTo="{!typeOfCategoryScreen}" name="xyz"/> 
+            <apex:param value=""  assignTo="{!categoryParentId}" name="bbb"/>     
+        </apex:actionFunction>
+        <apex:actionFunction name="saveSplitsCAT" action="{!saveSplits}" reRender="splitDivData" oncomplete="blankMethod();" status="waitMsg"/>
+        <apex:actionFunction name="blankMethod" action="{!defaults}" rerender="blendedDetail" status="waitMsg" onComplete="closePopUp();"/> 
+        <apex:actionFunction name="removeSplitCat" action="{!removeCategoryForSplit}" rerender="splitDivData" status="waitMsg"/>
+        <apex:actionFunction name="addSplitCat" action="{!addCategoryForSplit}" rerender="splitDivData" status="waitMsg"/>
+        
+        <div class="slds" >
+            <div class="container slds-p-around--medium"> 
+                
+                <apex:outputPanel id="detailSession" rendered="{!showDetail}" layout="none">
+                    
+                    <apex:inputHidden value="{!showInActive}" id="showInActive"></apex:inputHidden>
+                    <apex:inputHidden value="{!record.Recognition_Type__c}" id="selected"></apex:inputHidden>
+                    <apex:inputHidden value="{!indexString}" id="indexStringId" />
+                    
+                    <div class="slds-page-header" role="banner">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-col--padded">
+                                <h2 class="slds-text-heading--medium slds-p-top-small"> Enter the rule entry </h2>
+                            </div>
+                        </div>
+                    </div> <br/>   
+                    
+                    <!-- Button -->
+                    <div class="slds-grid slds-grid--align-center">
+                        <div class="slds-col">
+                            <apex:commandButton styleclass="btn slds-button slds-button--neutral" action="{!save}" value="Save" />
+                            <apex:commandButton styleclass="btn slds-button slds-button--neutral" action="{!cancel}" value="Cancel" />
+                        </div>
+                    </div> <br/>
+                    
+                    <div class="slds-section-title--divider"> Step 1: Set the rule name and description </div>
+                    <div class="slds-grid slds-wrap slds-form--horizontal">
+                        <div class="slds-col slds-col--padded">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="oppLink">Rule Name</label>
+                                <div class="slds-form-element__control">
+                                    <span class="slds-form-element__static">
+                                        <apex:inputField styleClass="slds-input" value="{!record.Name}" />
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="oppCloseDate">Active</label>
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox">
+                                        <apex:inputField styleclass="slds-input slds-form-element_control inputElement" value="{!record.Active__c}"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Description </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-textarea inputElement" value="{!record.Description__c}" />
+                                </div>
+                            </div>       
+                            
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Default Rule </label>
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox">
+                                        <apex:inputField styleclass="slds-input slds-form-element_control inputElement" value="{!record.Default_Rule__c}" />
+                                        <span class="slds-checkbox--faux"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-section-title--divider"> Step 2: Setup recognition types </div>
+                    <div class="slds-grid slds-wrap slds-form--horizontal" id="pbs">
+                        
+                        <div class="slds-col slds-col--padded">
+                            Recognition Type    
+                        </div>
+                        <div class="slds-col slds-col--padded">
+                            
+                            <apex:selectRadio value="{!record.Recognition_Type__c}" layout="pageDirection" title="Recognition Type: " id="sr" onChange="confirmRecognitionType(this, '{!record.Id}');">
+                                <!--<apex:actionSupport event="onclick" action="{!ChangeRecognitionTypeOptions}" rerender="detailSession" />-->
+                                <apex:selectOptions value="{!RecognitionTypeOptions}" />
+                            </apex:selectRadio>
+                       </div>     
+                       
+                       <div class="slds-col slds-col--padded boxSize">      
+                           <apex:outputPanel id="detail" >
+                                <apex:outputPanel id="milestoneDetail" rendered="{!showMilestoneDetail}" layout="block" style="border: 1pt solid #e6dede; margin:10px; padding:10px;padding-top:2px;">
+                                    <div class="slds-scrollable--x">
+                                        <table class="slds-table slds-table--bordered"  id="milestoneTable">
+                                            <thead>
+                                                <tr class="slds-text-title--caps">
+                                                    <th scope="col">
+                                                        <div class="slds-truncate"></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate"></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate" title="Milestone Name">Milestone Name</div>
+                                                    </th>
+                                                    <!--
+                                                    <th scope="col">
+                                                    <div class="slds-truncate" title="Milestone Name">Revenue %</div>
+                                                    </th> -->
+                                                    <th scope="col">
+                                                        <div class="slds-truncate" title="Projected Revenue">Projected-Sales Revenue
+                                                        </div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="slds-truncate" title="Actual Revenue">Actual Revenue
+                                                        </div>
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th scope="col" colspan="2">
+                                                        <div class="slds-truncate" title="Actual Revenue">
+                                                            <apex:selectRadio styleclass="slds-select" value="{!record.Milestone_Type__c}" title="Select Milestone Actual Type">
+                                                                <apex:actionSupport event="onclick" action="{!ChangeMilestoneType}" rerender="milestoneDetail" />
+                                                                <apex:selectOptions value="{!MilestoneOptions}" />
+                                                            </apex:selectRadio>
+                                                        </div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            
+                                            <tbody>
+                                                <apex:variable value="{!0}" var="indexVar" />
+                                                <apex:repeat value="{!RevRecRulesMilestones}" var="item" id="repeat1">
+                                                    <tr>
+                                                        <td scope="col" deleteIndex="{!indexVar}" id="tds">
+                                                            <div class="slds-truncate">
+                                                                <div class="slds-form-element__control">
+                                                                    <label class="slds-checkbox">
+                                                                        <apex:inputCheckbox styleclass="slds-input slds-form-element_control inputElement" id="firstCheckbox" styleClass="isDelete" />
+                                                                        <span class="slds-checkbox--faux"></span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div class="slds-truncate">
+                                                                <apex:outputField value="{!item.Milestone_Sequence__c}" />
+                                                            </div>
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div class="slds-truncate">
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Milestone_Name__c}" />
+                                                            </div>
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div class="slds-truncate">
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Projected_Percent__c}" id="rdp1" rendered="{!record.Milestone_Type__c == 'percent'}" onblur="saveMileStone();" /> 
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Projected_Amount__c}" id="rdp2" rendered="{!record.Milestone_Type__c == 'amount'}" onblur="saveMileStone();" /> 
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Projected_Qty__c}" id="rdp3" rendered="{!record.Milestone_Type__c == 'qty'}" onblur="saveMileStone();" />
+                                                            </div>
+                                                        </td>
+                                                        <td scope="col">
+                                                            <div class="slds-truncate">
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Actual_Percent__c}" id="rd1" rendered="{!record.Milestone_Type__c == 'percent'}" onblur="saveMileStone();" /> 
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Actual_Amount__c}" id="rd2" rendered="{!record.Milestone_Type__c == 'amount'}" onblur="saveMileStone();" /> 
+                                                                <apex:inputField styleclass="slds-input" value="{!item.Actual_Qty__c}" id="rd3" rendered="{!record.Milestone_Type__c == 'qty'}" onblur="saveMileStone();" />
+                                                            </div>
+                                                        </td>
+                                                        
+                                                        <!-- Code Added - 01/19/2015 - As per Milestone Date Automation Requirements-->
+                                                        <td scope="col">
+                                                            <div class="slds-truncate">
+                                                                <apex:selectList styleClass="slds-select" style="min-width: 240px;" value="{!item.Milestone_Date_Source__c}" Multiselect="false" size="1">
+                                                                    <apex:selectOptions value="{!StartAndEndDateOptions}" />
+                                                                </apex:selectList>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <apex:variable value="{!indexVar+1}" var="indexVar" />
+                                                </apex:repeat> 
+                                                <tr>
+                                                    <td scope="col">
+                                                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Add Milestone"  rerender="milestoneDetail" onClick="checkForDetele(); checkSelected1('{!RevRecRulesMilestones.size}', '{!record.Recognition_Type__c}' , ''); return false;"  />
+                                                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Remove Milestone"  rerender="milestoneDetail" onClick="checkForDetele();checkSelected('{!RevRecRulesMilestones.size}', '{!record.Recognition_Type__c}', ''); return false;" />
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:outputLabel value="{!MilestoneTotal}" /> 
+                                                            <!--<apex:outputLabel value="{!TotalPercent}"/>-->
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>        
+                                </apex:outputPanel>
+                                
+                                <!-- Amortize Detail -->
+                                <apex:outputpanel rendered="{!showAmortizeDetail || showAmortizedMilestoneDetail}">
+                                    <div class="slds-grid slds-grid--align-left">
+                                        <label class="slds-form-element__label" for="Period">Period:</label>
+                                    </div>
+                                    <apex:inputField styleClass="slds-input" value="{!record.Period__c}">
+                                        <apex:actionSupport event="onchange" action="{!ChangeRecognitionPeriod}" rerender="periodDetail" />
+                                    </apex:inputField> &nbsp;
+                                </apex:outputpanel>
+                                
+                                <!-- <apex:outputpanel >
+                                    <apex:outputpanel rendered="{!showAmortizedMilestoneDetail}">
+                                        <span class="labelCol vfLabelColTextWrap first last" style="float: left;">Amortize By</span>
+                                        <apex:selectRadio value="{!record.Amortize_By__c}" layout="pageDirection" title="Amortize By" rendered="{!showAmortizedMilestoneDetail}">
+                                            <apex:selectOptions value="{!amortizeByOptions}" />
+                                        </apex:selectRadio>
+                                    </apex:outputpanel>
+                                </apex:outputpanel> -->
+                                
+                                <apex:outputpanel id="periodDetail" layout="block">
+                                    <!-- Code Modified - 10/31/2014 - Set rendered condition  for Amortize Milestone -->
+                                    <apex:outputpanel rendered="{!(showAmortizeDetail || showAmortizedMilestoneDetail) && showDevideEvenlyDetail }">
+                                        <apex:selectRadio value="{!record.Divide_By__c}" layout="pageDirection" title="">
+                                            <apex:actionSupport event="onclick" action="{!onChangeDivideByOption}" rerender="detailSession" />
+                                            <apex:selectOptions value="{!DividedByOptions}" />
+                                        </apex:selectRadio>
+                                    </apex:outputpanel>
+                                    
+                                    <!-- Code Modified - 10/31/2014 - Set rendered condition  for Amortize Milestone --> 
+                                    <apex:outputPanel layout="block" style=" margin:5px;padding:30px;padding-top:2px;">
+                                        <apex:outputpanel rendered="{!(showAmortizeDetail || showAmortizedMilestoneDetail) && showByPeriodOrExactDetail }">
+                                            <apex:selectRadio value="{!record.Period_or_Exact_Days__c}" layout="pageDirection" title="">
+                                                <apex:actionSupport event="onclick" action="{!blankMethodForOnChange}" rerender="detailSession" />
+                                                <apex:selectOptions value="{!PeriodExactOptions}" />
+                                            </apex:selectRadio>
+                                        </apex:outputpanel>
+                                        
+                                        <apex:outputPanel >
+                                            
+                                            <!-- This panel is used to hold the start and end percentage field If Percentage selected -->
+                                            <apex:outputpanel rendered="{!record.Divide_By__c == 'Prorate' && (showAmortizedMilestoneDetail || showAmortizeDetail)}" layout="block" style="margin-left:10px;">
+                                                Start Percentage&nbsp; &nbsp;
+                                                <apex:inputField styleClass="slds-input" value="{!record.Start_Percentage__c}" style="width: 16%;"/><br/><br/>
+                                                End Percentage &nbsp; &nbsp;
+                                                <apex:inputField styleClass="slds-input" value="{!record.End_Percentage__c}" style="width: 16%;"/>                              
+                                            </apex:outputpanel>
+                                            
+                                            <apex:outputPanel rendered="{!(showAmortizeDetail || showAmortizedMilestoneDetail)}" layout="block" style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;">
+                                                Initial Value: <apex:inputField styleClass="slds-input"  value="{!record.Initial_Amount__c}" /> 
+                                                Amount Type:<apex:inputField styleClass="slds-input" value="{!record.Initial_Amount_Type__c}" />
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!(showAmortizeDetail || showAmortizedMilestoneDetail) && showOffsetDetail }" layout="block" style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;">
+                                                Offset Type:<apex:inputField styleClass="slds-input" value="{!record.Offset_Type__c}" /> 
+                                                Offset Periods:<apex:inputField styleClass="slds-input" value="{!record.Offset_Period__c}" />
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel layout="block" style="border: 1pt solid gray; margin:10px; padding:10px;padding-top:2px;" rendered="{!(showAmortizeDetail || showAmortizedMilestoneDetail) || showSingleTransDetail }">
+                                                Residual  Value:<apex:inputField styleClass="slds-input" value="{!record.Residual_Amount__c}" />
+                                                Residual Type:<apex:inputField styleClass="slds-input" value="{!record.Residual_Amount_Type__c}" />
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                </apex:outputpanel>
+                                
+                            </apex:outputPanel>
+                            
+                            <!-- Code added - 05/27/2015 - As per Blended Revenue Requirement --> 
+                            <apex:outputPanel id="blendedDetail" rendered="{!showBlendedRevenueDetail}" layout="block" >
+                                <div class="slds-scrollable--x"> 
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="slds-text-title--caps">
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Select"> Select </div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Sequence">Sequence</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Category Name</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Sub Category</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Revenue Type</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Projected-Sales Revenue</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Actual Revenue</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Line Item</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name"></div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Revenue Recognition Start Date</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Category Name">Revenue Recognition End Date</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        
+                                        <tbody>
+                                            <apex:repeat value="{!listCategoryWrap}" var="item" id="repeat">
+                                                <tr>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <div class="slds-form-element__control">
+                                                                <label class="slds-checkbox">
+                                                                    <apex:inputcheckbox styleClass="slds-checkbox" value="{!item.isSelected}" id="firstChkbox" />
+                                                                    <span class="slds-checkbox--faux"></span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:outputField value="{!item.category1.Sequence__c}" />
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:inputField styleClass="slds-input" style="width: 160px;" value="{!item.category1.Name}" rendered="{!NOT(item.category1.Is_Split__c)}"/>
+                                                            <apex:outputlabel rendered="{!item.category1.Is_Split__c}">
+                                                                <b style="color:blue;"> ----Allocate---- </b>
+                                                            </apex:outputlabel>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:inputField styleClass="slds-input" value="{!item.category1.Sub_Category_support__c}" rendered="{!NOT(item.category1.Is_Split__c)}"/>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:selectList styleClass="slds-select" style="width:100px;" value="{!item.category1.Category_Type__c}" size="1" multiselect="false">
+                                                                <apex:actionSupport event="onchange" action="{!blankMethodForOnChange}" rerender="opBlended,opBlendedProjected" status="waitMsg" />
+                                                                <apex:selectOptions value="{!BlendedOptions}" />
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:outputpanel id="opBlendedProjected">
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Projected_Percent__c}" id="rdp1" rendered="{!NOT(item.category1.Category_Type__c == 'Amount' || item.category1.Category_Type__c == 'Qty')}"
+                                                                                 style="text-align:right;" />
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Projected_Percent__c}" id="rdp2" rendered="{!item.category1.Category_Type__c == 'Amount'}"
+                                                                                 style="text-align:right;" />
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Projected_Percent__c}" id="rdp3" rendered="{!item.category1.Category_Type__c == 'Qty'}"
+                                                                                 style="text-align:right;" />
+                                                            </apex:outputpanel>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:outputpanel id="opBlended">
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Percent__c}" id="rd1" rendered="{!NOT(item.category1.Category_Type__c == 'Amount' || item.category1.Category_Type__c == 'Qty')}"
+                                                                                 style="text-align:right;" />
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Amount__c}" id="rd2" rendered="{!item.category1.Category_Type__c == 'Amount'}"
+                                                                                 style="text-align:right;" />
+                                                                <apex:inputField styleClass="slds-input" value="{!item.category1.Qty__c}" id="rd3" rendered="{!item.category1.Category_Type__c == 'Qty'}"
+                                                                                 style="text-align:right;" />
+                                                            </apex:outputpanel>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <b> Of Line Item #</b> 
+                                                            <apex:selectList styleClass="customSelectList" value="{!item.category1.Line_Item__c}" Multiselect="false" size="1">
+                                                                <apex:selectOptions value="{!item.lineItemForBlended}" />
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <input type="button" class="btn slds-button slds-button--neutral" value="Allocate" onClick="doSplit('{!item.category1.sequence__c}' , 'Parent', '');" id="btnSplitParent" />
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:selectList styleClass="slds-select" value="{!item.category1.Category_Start_Date__c}" Multiselect="false" size="1" rendered="{!NOT(item.category1.Is_Split__c)}">
+                                                                <apex:selectOptions value="{!StartDateSelectOptions}" />
+                                                            </apex:selectList>
+                                                            
+                                                            <apex:outputlabel rendered="{!item.category1.Is_Split__c}">
+                                                                <b style="color:blue;"> ----Allocate---- </b>
+                                                            </apex:outputlabel>
+                                                        </div>
+                                                    </td>
+                                                    <td scope="col">
+                                                        <div class="slds-truncate">
+                                                            <apex:selectList styleClass="slds-select" value="{!item.category1.Category_End_Date__c}" Multiselect="false" size="1" rendered="{!NOT(item.category1.Is_Split__c)}">
+                                                                <apex:selectOptions value="{!EndDateSelectOptions}" />
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>
+                                        </tbody>
+                                    </table>
+                                    <br/> 
+                                    <table style="width:18%">
+                                        <tr>
+                                            <td scope="col" >
+                                                <div class="slds-truncate">
+                                                    <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Add  Row" rerender="blendedDetail" onclick="checkSelected1('{!listCategoryWrap.size}', '{!record.Recognition_Type__c}', '');return false;" />
+                                                    &nbsp;&nbsp;&nbsp;
+                                                </div>
+                                            </td>
+                                            <td scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Delete Row" rerender="blendedDetail" onclick="checkSelected('{!listCategoryWrap.size}', '{!record.Recognition_Type__c}','');return false;" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </apex:outputPanel>
+                            
+                            <!-- This section is used to show the split functionality -->
+                            <!-- Code added - 04/04/2016- As per Blended Revenue Recognition Requirement -->
+                            <div id="blockUIDiv" style="display:none;" class="modal-backdrop"> </div>
+                            <apex:outputpanel id="splitDiv" layout="block" style="display:none;background-color:#F8F8F8;Width:90%;margin-left:-15%;" styleClass="modalPopUpClass ">  
+                                <apex:outputpanel layout="block" style="background-color:#F8F8F8;" id="splitDivData">
+                                  
+                                    <!-- Table to show Splitted category sequence number -->
+                                    <table style="width: 99%;">
+                                        <tr>
+                                            <td style=" background-color:#CFEEF8;height: 15px;color: black;font-weight: bold;">
+                                                <b> Sub-Line Item #{!lineItemRow}</b>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- Panel -->
+                                    <apex:outputpanel layout="block" style="width:99%;border: 1pt solid #e6dede;" id="blendedSplitRevDetail">
+                                        
+                                        <!-- Region -->
+                                        <apex:actionRegion >
+                                            <div class="slds-scrollable--x">
+                                            <table class="slds-table slds-table--bordered slds-table--cell-buffer" id="tableBlendedRev1">
+                                                <thead>
+                                                    <tr class="slds-text-title--caps">
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Select"> Select </div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Sequence">Sequence</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Category Name">Category Name</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Sub Category">Sub Category</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Value Type">Revenue Type</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Values">Projected-Sales Revenue</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Values">Actual Revenue</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Line Item">Line Item</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate"></div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Revenue Recognition Start Date">Revenue Recognition Start Date</div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Revenue Recognition End Date">Revenue Recognition End Date</div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                
+                                                <tbody>
+                                                    <apex:repeat value="{!listSplitCategoryWrap}" var="item" id="repet2">
+                                                        <tr>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <div class="slds-form-element__control">
+                                                                        <label class="slds-checkbox">
+                                                                            <apex:inputcheckbox styleClass="slds-input slds-form-element_control inputElement" value="{!item.isSelected}" id="firstChkbox1"/> 
+                                                                            <span class="slds-checkbox--faux"></span>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:outPutText value="{!item.category1.Sequence__c}" />
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Name}" style="width:112px;" rendered="{!NOT(item.category1.Is_Split__c)}"/>
+                                                                    <apex:outputlabel rendered="{!item.category1.Is_Split__c}">
+                                                                        <b style="color:blue;"> ----Allocate---- </b>
+                                                                    </apex:outputlabel>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Sub_Category_support__c}" style="width:112px;" rendered="{!NOT(item.category1.Is_Split__c)}"/> 
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:selectList styleClass="slds-select" style="width:100px;" value="{!item.category1.Category_Type__c}" size="1" multiselect="false">
+                                                                        <!--  <apex:actionSupport event="onchange" action="{!ChangeCategoryTypeForSplit}" rerender="blendedSplitRevDetail" status="waitMsg"/>   -->
+                                                                        <apex:selectOptions value="{!BlendedOptions}"/>
+                                                                    </apex:selectList>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Projected_Amount__c}" id="catp11" rendered="{!item.category1.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Projected_Qty__c}" id="catp21" rendered="{!item.category1.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                                    <apex:inputField styleClass="slds-input"  value="{!item.category1.Projected_Percent__c}" id="catp31" rendered="{!NOT(item.category1.Category_Type__c = 'Amount' || item.category1.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Amount__c}" id="cat11" rendered="{!item.category1.Category_Type__c = 'Amount'}" style="width:120px;text-align:right;"/>
+                                                                    <apex:inputField styleClass="slds-input" value="{!item.category1.Qty__c}" id="cat21" rendered="{!item.category1.Category_Type__c = 'Qty'}" style="width:120px;text-align:right;"/>
+                                                                    <apex:inputField styleClass="slds-input"  value="{!item.category1.Percent__c}" id="cat31" rendered="{!NOT(item.category1.Category_Type__c = 'Amount' || item.category1.Category_Type__c = 'Qty')}" style="width:120px;text-align:right;"/>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <b> Of Line Item #</b> &nbsp;&nbsp;
+                                                                    <apex:selectList styleClass="customSelectList" value="{!item.category1.Line_Item__c}" Multiselect="false" size="1">                                                        
+                                                                        <apex:selectOptions value="{!item.lineItemForBlended}" />
+                                                                    </apex:selectList> 
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <input class="btn slds-button slds-button--neutral" type="button" value="Allocate"  id="btnSplitParent"  onClick="doSplit('{!item.category1.sequence__c}' , 'Child', '{!item.category1.RevRecRuleSplitCategory__c}');"/>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:selectList styleClass="slds-select" value="{!item.category1.Category_Start_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.category1.Is_Split__c)}">
+                                                                        <!-- <apex:actionSupport event="onchange" action="{!onChangeStartOptionsForSplitBlended}" rerender="blendedSplitRevDetail"  status="waitMsg"> 
+                                                                        <apex:param value="{!item.rowCount}"  name="startRowNum"/>
+                                                                        </apex:actionSupport>     -->        
+                                                                         <apex:selectOptions Value="{!StartDateSelectOptions}" /> 
+                                                                    </apex:selectList> 
+                                                                    <apex:outputlabel rendered="{!item.category1.Is_Split__c}">
+                                                                        <b style="color:blue;"> ----Allocate---- </b>
+                                                                    </apex:outputlabel>
+                                                                </div>
+                                                            </td>
+                                                            <td scope="col">
+                                                                <div class="slds-truncate">
+                                                                    <apex:selectList styleClass="slds-select"  value="{!item.category1.Category_End_Date__c}"  multiselect="false" size="1" rendered="{!NOT(item.category1.Is_Split__c)}">
+                                                                        <!--  <apex:actionSupport event="onchange" action="{!onChangeEndOptionsForBlendedSplit}" rerender="blendedSplitRevDetail"  status="waitMsg">
+                                                                        <apex:param value="{!item.rowCount}" name="endRowNumber"/>
+                                                                        </apex:actionSupport>  -->
+                                                                        <apex:selectOptions Value="{!EndDateSelectOptions}" />  
+                                                                    </apex:selectList>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </apex:repeat> 
+                                                    <tr>
+                                                        <td scope="col">
+                                                            <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Add Row"  rerender="blendedSplitRevDetail" onclick="checkSelected1('{!listSplitCategoryWrap.size}', '{!record.Recognition_Type__c}', 'Split');return false;"/>
+                                                            <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Delete Row"  onclick="checkSelected('{!listSplitCategoryWrap.size}', '{!record.Recognition_Type__c}', 'Split');return false;" rerender="blendedSplitRevDetail" />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            </div>
+                                        </apex:actionRegion>
+                                    </apex:outputpanel>
+                                    
+                                    <!-- Splits page Button to save splits and close popup  --> 
+                                    <center style="margin-top:10px;">
+                                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" reRender="splitDivData" Value="Save Splits" onclick="saveSplitsCAT();" status="waitMsg" />
+                                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Close" status="waitMsg"  onclick="closePopUp();" reRender="blendedDetail"/>
+                                    </center>
+                                    
+                                </apex:outputpanel>
+                            </apex:outputpanel>
+                        </div>
+                    </div>
+                    
+                    <apex:outputpanel rendered="{!showAmortizeDetail || showSingleTransDetail || showAmortizedMilestoneDetail}">
+                        <div class="container slds-p-around--medium"> 
+                            <div class="slds-section-title--divider"> Step 3: Select the date to use to initiate revenue schedules for this rule </div>
+                            <div class="slds-grid slds-wrap slds-form--horizontal" >
+                                <apex:outputLabel rendered="{!showAmortizeDetail || showAmortizedMilestoneDetail}">Revenue Recognition Start Date&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                                <apex:outputLabel rendered="{!showSingleTransDetail}">Transaction Date&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                                
+                                <apex:selectList styleClass="slds-select" value="{!record.Revenue_Recognition_Start_Date__c}" label="" style="max-width: 300px;">
+                                    <apex:selectOptions value="{!StartDateSelectOptions}"/>
+                                </apex:selectList>
+                            </div>
+                        </div>
+                    </apex:outputpanel>
+                    
+                    <apex:outputpanel rendered="{!showAmortizeDetail || showAmortizedMilestoneDetail}" >
+                        <div class="container slds-p-around--medium">
+                            <div class="slds-section-title--divider"> Step 4: Select the date to use to terminate revenue schedules for this rule </div>
+                            <div class="slds-grid slds-wrap slds-form--horizontal" > 
+                                <apex:outputLabel > Revenue Recognition End Date &nbsp;&nbsp;&nbsp;&nbsp; </apex:outputLabel>
+                                <apex:selectList styleClass="slds-select" value="{!record.Revenue_Recognition_End_Date__c}" style="max-width: 300px;">
+                                    <apex:selectOptions value="{!EndDateSelectOptions}" />
+                                </apex:selectList>
+                            </div>
+                        </div>
+                    </apex:outputpanel>
+                    
+                    <!-- Code is added on 10/24/2016 to enable manual forecasting for Amortized milestone -->
+                    <apex:outputpanel rendered="{!showAmortizedMilestoneDetail}">
+                        <div class="container slds-p-around--medium">
+                            <div class="slds-section-title--divider"> Step 5: Select the checkbox for manual forecasting </div>
+                            <div class="slds-grid slds-wrap slds-form--horizontal" >
+                                <apex:outputLabel > Enable Projected-Sales Forecast Values   &nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                                <apex:inputField value="{!record.Enable_Manual_Forecast__c}"/>  
+                                <apex:actionsupport event="onclick" rerender="amtZeroPanel" />
+                            </div>
+                        </div>
+                    </apex:outputpanel>
+                    
+                    <!-- Code is added on 10/24/2016 to enable manual forecasting for Amortized milestone -->
+                    <apex:outputpanel rendered="{!showAmortizedMilestoneDetail && record.Enable_Manual_Forecast__c}" id="amtZeroPanel">
+                        <div class="container slds-p-around--medium">
+                            <div class="slds-section-title--divider"> Step 6: Select the checkbox to initialize Projected-Sales Forecast and Actual Forecast with 0 Value </div>
+                            <div class="slds-grid slds-wrap slds-form--horizontal" >
+                                <apex:outputLabel > Initialize Projected-Sales Forecast and Actual Forecast with Zero Value   &nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+                                <apex:inputField value="{!record.Forecast_With_Zero_Value__c}"/>  
+                            </div>
+                        </div>
+                    </apex:outputpanel>
+                </apex:outputPanel>
+                
+                <!-- Start Second Page Block -->
+                <apex:outputPanel id="masterSession">
+                    <div class="slds-page-header" role="banner">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-col--padded">
+                                <h2 class="slds-text-heading--medium slds-p-top-small"> Viewing Revenue Recognition Rules </h2>
+                            </div>
+                        </div>
+                    </div> <br/>   
+                    
+                    <!-- Button -->
+                    <div class="slds-grid slds-grid--align-center">
+                        <div class="slds-col">
+                            <apex:commandButton styleclass="btn slds-button slds-button--neutral" action="{!create}" value="Create New Rule" />
+                            <apex:commandButton styleclass="btn slds-button slds-button--neutral" action="{!toggleShowHideInActive}" value="{!ShowHideInActive}" />
+                        </div>
+                    </div> <br/>  
+                    
+                    <apex:outputPanel layout="block">    
+                        <div class="slds-scrollable--x">
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate"></div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Rule Name">
+                                                Rule Name
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Active">
+                                                Active
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Default Rule">
+                                                Default Rule
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Start Date">Start Date</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="End Date">End Date</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Recognition Type">Recognition Type</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!RevRecRules}" var="item">
+                                        <!-- Display in case of the MultiCurrency not Enable -->
+                                        <tr>
+                                            <td scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputPanel style="{!IF(item.rule.Active__c, '', 'background-color:grey')}">   
+                                                        <apex:commandButton styleClass="btn slds-button slds-button--neutral" value="Edit" action="{!edit}" onclick="MoveToTop()" oncomplete="MoveToTop()" rerender="form">
+                                                            <apex:param name="id" value="{!item.rule.id}"></apex:param>
+                                                        </apex:commandButton>
+                                                    </apex:outputPanel> 
+                                                </div>
+                                            </td>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!item.rule.name}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputField value="{!item.rule.Active__c}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputField value="{!item.rule.Default_Rule__c}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!item.Revenue_Recognition_Start_Date_Display}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!item.Revenue_Recognition_End_Date_Display}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">
+                                                    <apex:outputText value="{!item.rule.Recognition_Type__c}" style="{!IF(item.rule.Active__c, '', 'background-color:grey')}"/>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </apex:repeat> 
+                                </tbody>
+                            </table>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <!-- End Second Page Block -->
+                
+            </div> 
+        </div>
+    </apex:form> <!--End apex form -->
+</apex:page>

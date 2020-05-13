@@ -1,0 +1,165 @@
+<!--
+Description     :   This page is for Mass revenue calculate opportunity of matching criteria
+
+Created By      :  
+
+Created Date    :   09/30/2014
+
+Version         :   V_1.1
+
+Revision Log    :   V_1.0 - Created
+V_1.1 - Modified - Added new date filter.
+-->
+<apex:page controller="RevRecRollupCalculateController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false">
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS0121, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <style>
+        .dateFormat {
+        display: none;
+        }
+    </style> 
+    <!-- Apex form -->
+    <apex:form id="form">
+        <div class="slds">
+            
+            <!--Page Messages-->
+            <apex:pageMessages />
+            
+            <!-- block UI component -->
+            <c:BlockUI />
+            
+            <!-- Action Status -->
+            <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+            <apex:actionFunction name="executeMethod" action="{!SetYearlyAndMonthlyRollupOnOpportunity}" reRender="form" status="waitMsg"/>
+             
+            <apex:outputPanel id="pb">    
+                <div class="slds-page-header" role="banner">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-col--padded">
+                            <h1 class="slds-text-heading--medium slds-p-top-medium">{!$Label.appropozsln__Mass_RollUp_Calculate}
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="container slds-p-around--medium">
+                    <div class="slds-section-title--divider">
+                        Search
+                    </div>
+                    <div class="slds-grid slds-wrap slds-form--horizontal">
+                        <div class="slds-col slds-col--padded">   
+                            
+                            <!-- Opportunity stage -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Stage </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" value="{!opportunity.StageName}" required="false"/>
+                                </div>
+                            </div>       
+                            
+                            <!-- Amount -->  
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Amount From: </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" value="{!opportunity.Amount}" required="false"/>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Date Field : </label>
+                                <div class="slds-form-element__control">
+                                    <apex:selectList styleClass="slds-select" multiselect="false" size="1" value="{!selectedCriteriaField}">
+                                        <apex:selectOptions value="{!SearchDateOptions}"/>
+                                    </apex:selectList>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <apex:outputPanel rendered="{!selectedCriteria = 'Custom'}">
+                                    <label class="slds-form-element__label" > From : </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField styleClass="slds-input" html-placeholder="Select date" value="{!opportunity.REVvue_CreatedDate__c}" required="false" />
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                            
+                            <!-- Opp type -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Type </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" value="{!opportunity.Type}" required="false"/>
+                                </div>
+                            </div>
+                            
+                            <!--Amount To --->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Amount To: </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" value="{!opportunity1.Amount}" required="false"/>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Range : </label>
+                                <div class="slds-form-element__control">
+                                    <apex:selectList styleClass="slds-select" value="{!selectedCriteria}" multiselect="false" size="1" label="Select Criteria">
+                                        <apex:actionSupport event="onchange" action="{!changeCriteria}" reRender="pb" status="waitMsg"/>
+                                        <apex:selectOptions value="{!FilterCriteria}"/> 
+                                    </apex:selectList>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-form-element">
+                                <apex:outputPanel rendered="{!selectedCriteria = 'Custom'}"> 
+                                    <label class="slds-form-element__label" > To : </label>
+                                    <div class="slds-form-element__control slds-datepicker">
+                                        <apex:inputField styleClass="slds-input" html-placeholder="Select date" value="{!opportunity1.REVvue_CreatedDate__c}" required="false" />
+                                    </div>
+                                </apex:outputPanel>     
+                            </div>    
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="slds-section-title--divider">
+                        Single Opportunity Search
+                    </div>
+                    <div class="slds-grid slds-wrap slds-form--horizontal">
+                        
+                        <div class="slds-col slds-col--padded">
+                            <!-- Opportunity Name -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Opportunity Name </label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField styleClass="slds-input" value="{!opportunity.Name}" required="false"/>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-col slds-col--padded">
+                            <!-- Account Name -->
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" > Account Name </label>
+                                <div class="slds-form-element__control">
+                                    <c:LookUpCompoment SObject="{!opportunity}" Field="AccountId"></c:LookUpCompoment>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <!-- Buttons -->
+                    <div class="slds-grid slds-grid--align-center" style="margin-top:5px;margin-bottom:5px;">
+                        <div class="slds-col">
+                            <input class="btn slds-button slds-button--neutral" value="{!$Label.appropozsln__executebatchactionlabel}" type="button" onclick="executeMethod();"/>
+                        </div>
+                    </div>
+                    
+                </div>
+            </apex:outputPanel>
+        </div>      
+    </apex:form>
+</apex:page>

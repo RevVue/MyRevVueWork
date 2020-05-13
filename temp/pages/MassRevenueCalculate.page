@@ -1,0 +1,103 @@
+<!--
+        Description     :   This page is for Mass revenue calculate opportunity of matching criteria
+
+        Created By      :  
+        
+        Created Date    :   09/30/2014
+    
+        Version         :   V_1.1
+        
+        Revision Log    :   V_1.0 - Created
+        					V_1.1 - Modified - Added new date filter.
+-->
+<apex:page controller="MassRevenueCalculateController" tabStyle="RevRecAppSetting__c" id="page" showHeader="false" sidebar="false">
+
+    <!-- Apex form -->
+    <apex:form id="form">
+         
+         <!--Page Messages-->
+         <apex:pageMessages />
+        
+        <!-- block UI component -->
+        <c:BlockUI />
+        
+       <!-- Action Status -->
+        <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+        
+        <!-- Page Block -->
+        <apex:pageBlock id="pb" title="{!$Label.appropozsln__mass_revenue_calculation_label}">
+        
+            <!-- Page Block section -->
+            <apex:pageBlockSection columns="2" title="Search" collapsible="false" id="pbs">
+                
+                <!-- Opportunity stage -->
+                <apex:inputField value="{!opportunity.StageName}" required="false"/>
+                
+                <!-- Opp type -->
+                <apex:inputField value="{!opportunity.Type}" required="false"/>
+                
+                <!-- Amount -->  
+                <apex:pageBlockSectionItem >
+                    Amount From:
+                    <apex:inputField value="{!opportunity.Amount}" required="false"/>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    Amount To:
+                    <apex:inputField value="{!opportunity1.Amount}" required="false"/> 
+                </apex:pageBlockSectionItem> 
+                
+                
+                <apex:pageBlockSectionItem >
+                	Date Field :
+                	<apex:selectList multiselect="false" size="1" value="{!selectedCriteriaField}">
+                		<apex:selectOptions value="{!SearchDateOptions}"/>
+                	</apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                	Range : 
+	                <apex:selectList value="{!selectedCriteria}" multiselect="false" size="1" label="Select Criteria">
+	                	<apex:actionSupport event="onchange" action="{!changeCriteria}" reRender="pb" status="waitMsg"/>
+						<apex:selectOptions value="{!FilterCriteria}"/> 
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+				
+				<apex:pageBlockSectionItem rendered="{!selectedCriteria = 'Custom'}">
+                	From :
+                	<apex:inputField value="{!opportunity.REVvue_CreatedDate__c}" required="false" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!selectedCriteria = 'Custom'}">
+                	To :  
+                	<apex:inputField value="{!opportunity1.REVvue_CreatedDate__c}" required="false" />
+                </apex:pageBlockSectionItem>            
+				
+            </apex:pageBlockSection>
+            
+            <!-- Page Block section -->
+            <apex:pageBlockSection columns="2" title="Single Oppty Search" collapsible="false" id="pbs2">
+                
+                <!-- Opportunity stage -->
+                <apex:inputField value="{!opportunity.Name}" required="false"/>
+                
+                <!-- Opp type -->
+                <apex:inputField value="{!opportunity.AccountId}" required="false"/>
+            </apex:pageBlockSection>
+  			
+            <!-- Buttons -->
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.appropozsln__executebatchactionlabel}" action="{!searchOppRecordsWithMatchingCreteria}" reRender="form" status="waitMsg"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        <!-- Page Block section -->
+        <apex:pageBlock title="Mass Rule Assignment" id="pbs3">
+            
+            <!-- Buttons -->
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="{!$Label.appropozsln__executebatchactionlabel}" action="{!SetRuleAndRuleAssignmentOnLineItem}" reRender="form" status="waitMsg"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

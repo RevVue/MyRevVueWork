@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Time_of_Month_Selection_Types__c</fullName>
+    <deprecated>false</deprecated>
+    <description>1 - Last day of the month
+2 - Specific date of the month
+3 - Specific week day on certain week of the month
+4 - Certain days before certain week of the month
+5 - Last business day of the month</description>
+    <externalId>false</externalId>
+    <label>Time of Month Selection Types</label>
+    <length>2</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

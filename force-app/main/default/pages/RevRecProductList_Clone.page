@@ -1,0 +1,309 @@
+<apex:page sidebar="false" id="page" Controller="RevRecProductListController" docType="html-5.0" >  
+    <style>
+        @media all and (min-width: 769px) { 
+        .searchBox {
+        max-width: 200px;
+        }
+        }
+        @media all and (max-width: 769px) { 
+        .inputLookupElement {
+        min-width: 200px;
+        }
+        } 
+        .msgIcon {
+        display: none!important
+        }
+        .customMessage * {
+        color: #fff!important
+        } 
+        .customMessage {
+        margin: 5px 0!important;
+        max-width: 1280px;
+        opacity: 1!important;
+        width: 100%;
+        font-size: 12px;
+        border: 0px;
+        padding-left: 10px;
+        }
+        .message {
+        opacity: .1
+        }
+        .slds .slds-scrollable--x.custome-scroll-x{overflow:visible !important;overflow-x:inherit !important;}
+    </style>
+    
+    <!-- Form -->
+    <apex:form id="form" rendered="{!PBFlag}">
+        <apex:pageBlock >
+            
+            <div class="slds">
+                
+                <!-- Block UI component -->
+                <c:BlockUI />
+                
+                <!-- Action Status -->
+                <apex:actionStatus onStart="blockMe();" onstop="unBlockMe();" id="waitMsg"/>
+                
+                <apex:actionFunction name="saveRuleOnPro" action="{!blankMethodOnProductList}" rerender="ooppppp,pB1" Status="waitMsg"> 
+                    <apex:param value="" assignTo="{!oppLineItemRow}" name="ruleRow" />
+                    <apex:param value="" assignTo="{!ruleId}" name="ruleId" />
+                </apex:actionFunction>
+                
+                <apex:outputPanel id="pb">
+                    
+                    <!--Page Message  --> 
+                    <apex:pageMessage summary="{!errMsg}" rendered="{!showErr}" severity="INFO" strength="3" id="msg"/>
+                    
+                    <div class="slds-grid slds-grid--align-centre"> 
+                        <apex:inputText styleclass="slds-input searchBox" value="{!searchString}" id="searchText" html-placeholder="Search..."/>
+                        <apex:commandButton styleclass="btn slds-button slds-button--neutral" value="Search" action="{!doSearch}" status="waitMsg" reRender="pb" id="searchButton"  />
+                    </div><br/> 
+                    <apex:outputPanel id="pbs" >
+                        <div class="slds-scrollable--x custome-scroll-x">
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer" id="tbl">
+                                <thead>
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product Name">
+                                                Product Name
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product Code">
+                                                Product Code
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Active">
+                                                Active
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Product Description">
+                                                Product Description
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Revenue Recognition Rule">
+                                                Revenue Recognition Rule
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Apex variable  -->
+                                    <apex:variable value="{!0}" var="rowNum"/>
+                                    <apex:repeat value="{!productsList}" var="item" rendered="{!productsList.size > 0}" id="rp">
+                                        <tr>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><apex:outputlabel value="{!item.product.Name}"/></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><apex:outputlabel value="{!item.product.ProductCode}"/></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><apex:outputField value="{!item.product.IsActive}"/></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><apex:outputlabel value="{!item.product.Description}"/></div>
+                                            </th>
+                                            <th scope="col" style="width:250px">
+                                                <div class="slds-grid slds-wrap">   
+                                                    <div class="slds-col--padded slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                                        <div class="slds-form--stacked">
+                                                            <div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+                                                                <div class="slds-form-element">
+                                                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                                                        <svg aria-hidden="true" class="slds-input__icon" onclick="lookupRule2('lookup-{!rowNum}', '{!rowNum}');">
+                                                                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                        </svg>
+                                                                        <input id="lookup-{!rowNum}" value="{!item.Product.RevRecRule__r.Name}" class="slds-input lkp-box" type="text" aria-autocomplete="list" role="combobox" aria-expanded="false" aria-activedescendant=""  
+                                                                               onkeyup="lookupRule2(this, '{!rowNum}');" onfocus ="lookupRule2(this, '{!rowNum}');" oninput="removeLookupValue(this, '{!rowNum}');"/>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="slds-lookup__menu" role="listbox" id="results-{!rowNum}" style="display:none;max-height:200px;" >
+                                                                    <div class="slds-lookup__item">
+                                                                        <button class="slds-button" >
+                                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon--small">
+                                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                                                            </svg>&quot;<span id="keyword-{!rowNum}"></span>&quot; in Rules </button>
+                                                                    </div>
+                                                                    <ul class="slds-lookup__list" role="presentation" id="ui_results-{!rowNum}">                                                                                       
+                                                                    </ul>                           
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="slds-truncate"> 
+                                                    <!-- Apex variable Increment -->
+                                                    <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </apex:repeat> 
+                                </tbody>
+                            </table>
+                        </div>
+                        <apex:outputpanel rendered="{!productsList.size = 0}">
+                            <div class="slds-notify slds-notify--alert slds-theme--inverse-text slds-theme--alert-texture" role="alert">
+                                <p> No records to display.</p>
+                            </div>
+                        </apex:outputpanel> 
+                        <br/>
+                    </apex:outputPanel>
+                    
+                    <!-- Buttons -->
+                    <apex:outputPanel rendered="{!IF(products.Size > 0, true, false)}">
+                        <div class="slds-grid slds-grid--align-center">
+                            <div class="slds-col">
+                                <apex:commandButton styleclass="btn slds-button slds-button--neutral" value="First" action="{!first}" status="waitMsg" reRender="pb"   />
+                                <apex:commandButton styleclass="btn slds-button slds-button--neutral" value="Previous" action="{!previous}" status="waitMsg" reRender="pb" rendered="{!IF(PreviousButtonDisabled  == true, false, true)}"/>
+                                <apex:commandButton styleclass="btn slds-button slds-button--neutral"  action="{!next}" value="Next" status="waitMsg" reRender="pb" rendered="{!IF(NextButtonDisabled == true, false, true)}"/>
+                                <apex:commandButton styleclass="btn slds-button slds-button--neutral"  value="Last" action="{!last}" status="waitMsg" reRender="pb" />
+                                <apex:commandButton styleclass="btn slds-button slds-button--neutral"  value="Save" action="{!saveResults}" status="waitMsg" reRender="pb"/>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel> 
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+    
+    <script>
+    $(document).ready(function(){
+        overridePageMessages();    
+    });
+    
+    function overridePageMessages() {  
+        
+        var textureEffect = '';
+        //Uncomment below line for texture effect on page messages
+        //textureEffect = 'slds-theme--alert-texture';
+        
+        $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+        $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+        $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+        $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+        
+        $('.errorM3').removeClass('errorM3'); 
+        $('.confirmM3').removeClass('confirmM3'); 
+        $('.infoM3').removeClass('infoM3');   
+        $('.warningM3').removeClass('warningM3');  
+    }
+    
+    function submitForm(eve) {      
+        if (eve.which == 13 || eve.keyCode == 13) {
+            document.getElementById('mainpage:ProductListPage:page:form:searchButton').click();
+            return false;
+        }
+    }   
+    
+    var j$ = jQuery.noConflict();
+    
+    function removeLookupValue(elm, rNumber) {
+        if($(elm).val() == '') {
+        	var rowCount = '';
+            if(typeof elm === 'string' && elm.indexOf('lookup-') != -1) {
+                
+                rowCount = elm.split('-')[1];
+                elm = document.getElementById('lookup-' + rowCount);
+            } else
+                rowCount = elm.id.split('-')[1];
+            saveRuleOnPro(rowCount, '');
+        }
+    }
+    
+    function lookupRule2 (elm, rNumber) {     
+        var rowCount = '';
+        if(typeof elm === 'string' && elm.indexOf('lookup-') != -1) {
+            
+            rowCount = elm.split('-')[1];
+            elm = document.getElementById('lookup-' + rowCount);
+        } else
+            rowCount = elm.id.split('-')[1];
+        
+        if(j$('#results-'+rowCount).css('display') == 'none'){
+            j$('#results-'+rowCount).css("display","block");
+            j$('#lookup-'+rowCount).attr('aria-expanded','true'); 
+            j$('#keyword-'+rowCount).html(j$('#lookup-'+rowCount).val());
+        }else if(j$('#results-'+rowCount).css('display') == 'block'){                
+            j$('#results-'+rowCount).css("display","none");
+            j$('#lookup-'+rowCount).attr('aria-expanded','false'); 
+        }
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.RevRecProductListController.queryRules}',
+            j$('#lookup-'+rowCount).val(),                                                   
+            function(result, event){ 
+                if (event.status) {  
+                    document.getElementById("ui_results-"+rowCount).innerHTML = "";
+                    populateLookupAssignment(result,rowCount, elm);
+                } else if (event.type === 'exception') {
+                    j$('#lookup-'+rowCount) = 'ERROR: ' + event.message;   
+                } else {
+                    j$('#lookup-'+rowCount) = 'ERROR: ' + event.message;   
+                }
+            }, 
+            {escape: true}
+        ); 
+    }
+    function populateLookupAssignment(result,rowCount, obj){
+        if(result){   //console.log(result);          
+            j$( result ).each(function() { //console.log(this.Name);
+                                                 j$('#ui_results-'+rowCount).append('<li class="slds-lookup__item">' + 
+                                                                                    '<a id="' + this.Id + '" href="javascript:void(0)" role="option">' + 
+                                                                                    '<svg aria-hidden="true" class="slds-icon slds-icon-standard-account slds-icon--small">' + 
+                                                                                    '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR ($Resource.SLDS0121, 'assets/icons/utility-sprite/svg/symbols.svg#user')}"></use>' + 
+                                                                                    '</svg>' + this.Name +'</a>' + 
+                                                                                    '</li>'); 
+                                                });
+                   var childPos = j$(obj).offset().top;
+                   var parent = document.getElementById("tbl");
+                   var parentPos = j$(parent).offset().top;
+                   var childOffset = childPos - parentPos;   
+                   var resultHeight = j$('#results-' + rowCount).height();                       
+                   if(resultHeight < (childOffset)) {
+                       j$('#results-' + rowCount).css("top","auto");
+                       j$('#results-' + rowCount).css("bottom","32px");
+                   }
+                   else {
+                       
+                       j$('#results-' + rowCount).css("top","32px");
+                       j$('#results-' + rowCount).css("bottom","auto");
+                   }
+                   
+                   j$('li.slds-lookup__item a').click(function(e) 
+                                                      {           
+                                                          j$('#lookup-'+rowCount).val(j$(this)[0].innerText); 
+                                                          j$('#lookup-'+rowCount).attr('aria-activedescendant',j$(this)[0].id);
+                                                          j$('#lookup-'+rowCount).attr('aria-expanded','false');
+                                                          var ruleId = j$(this)[0].id;
+                                                          saveRuleOnPro(rowCount, ruleId);
+                                                          j$('#results-'+rowCount).css("display","none");
+                                                      });
+                  }                           
+    }
+    $(document).mouseup(function(e){
+        var container = $(".slds-lookup__menu");
+        var container2 = $(".lkp-box");
+        container.hide();
+        console.log('container2.is(e.target)...###'+container2.is(e.target));
+        
+        // If the target of the click isn't the container
+        if(!container.is(e.target) && !container2.is(e.target) && container.has(e.target).length === 0){
+            container.hide();
+        }/*
+        else if($(e.target).hasClass("lkp-box")){
+            console.log('else part');
+            $(e.target).parent().parent().parent().find(".slds-lookup__menu").show();
+        }*/
+        else if($(e.target).hasClass("lkp-box")){
+            console.log('else part');
+            $(e.target).closest(".slds-lookup").find(".slds-lookup__menu").show();
+        }
+    });
+    </script>
+    
+</apex:page>

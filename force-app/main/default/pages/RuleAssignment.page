@@ -1,0 +1,308 @@
+<!-- 
+    Description     :   This page is used to create Rule assignment record and assign RevRecRule on the opportunity and product.
+    
+    Created Date    :   02/05/2016 
+
+    Version         :   V_1.0
+
+    Revision Log    :   V_1.0 - Created
+ -->
+<apex:page showHeader="false" sidebar="false" controller="RuleAssignmentController" tabStyle="RevRecAppSetting__c" id="page">
+
+    <script>
+        function checkAll(obj, listSize) { 
+            
+            var preFix = 'mainpage:RuleAssg:page:form:pb2:pt2:';
+            var suffix = ':checkbox';
+                        
+            for(i =0; i < parseInt(listSize) ; i++) {
+                 var idP = preFix + i + suffix;
+                document.getElementById(idP).checked = obj.checked;
+            }
+        }   
+        
+        // This method is used to check or unchecked header check box.
+        function checkUnCheckParent(pb2 , pt2 ,headerCheck) {
+            var checkedCount = 0;
+            var totalRowCount = -1;
+            for (var i = 0; i < document.getElementsByTagName('input').length; i++) {
+                if(document.getElementsByTagName('input')[i].id.includes("pt2") ) {
+                    totalRowCount +=1;
+                    if (document.getElementsByTagName('input')[i].checked) {
+                         checkedCount += 1;
+                     }
+                }
+             }
+             if(checkedCount == totalRowCount)  {
+                 document.getElementsByClassName('one')[0].checked = !document.getElementsByClassName('one')[0].checked;
+             }
+         }
+         
+        //This method is used to open popup window
+        var $a = jQuery.noConflict();
+        function showSplitPopup() {
+            console.log('check if popup called 1:: ');
+            $a(".modalPopUpClass").show();   
+            console.log('check if popup called 2:: ');
+            $a("#blockUIDiv").show();
+            $a(".ui-icon-closethick").bind('click', function() {
+                $a("#blockUIDiv").hide();
+                $a(".modalPopUpClass").dialog("close");
+        
+            }); 
+        }
+        
+        function closePopUp() {
+            $a("#blockUIDiv").hide();
+            $a(".modalPopUpClass").hide();
+        }
+        
+        //This method is used to show alerts 
+        function showPopup (fieldName , operatorName, rowCount) {
+            
+            //if field name is none then show alert ow call controller method
+             if(fieldName == 'None') { 
+                alert('Please select any field/Operator [Opportunity , Product , Family ] from drop down .');
+             }else if(operatorName == 'None' || operatorName == '') {
+                 alert('Please select any Operator [Equals/Not Equals] from drop down .');
+             }else {//Calling method
+                showPopUP(fieldName , rowCount);
+             }
+        }
+        
+        //This function is used to call search method 
+        function submitForm(eve) {      
+             if (eve.which == 13 || eve.keyCode == 13) {
+                 document.getElementsByClassName('searchBtn')[0].click();
+                 return false;
+             }
+        }   
+        document.onkeypress = submitForm 
+    </script>
+    
+     <style>
+        .modalPopUpClass {
+            width: 80%;
+         	height: 90%;
+            position: absolute;
+            left: 20%;
+            top: -10%;
+         	overflow:scroll;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.72);
+            opacity: 1;
+        }
+     </style>
+    
+    <!-- Apex Form -->
+    <apex:form id="form">
+    
+        <!-- Action Function -->
+        <apex:actionFunction name="editRuleAsg" action="{!editRuleAssignment}" reRender="pb,pb2" status="waitMsg">
+            <apex:param value=""  name="ruleIdEdit"/> 
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="deleteRuleAsg" action="{!deleteRuleAssignment}"  reRender="pb,pb2" status="waitMsg">
+            <apex:param value=""  name="ruleIdDelete"/> 
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="showPopUP" action="{!fetchRelatedRecords}" reRender="selectDivData" oncomplete="showSplitPopup();">
+            <apex:param value=""  name="filterField" assignTo="{!selectedCriteriaFromButton}"/>
+            <apex:param value=""  name="rowNum" assignTo="{!selectedRowNum}"/>
+        </apex:actionFunction>
+        
+        <!-- Page block -->
+        <apex:pageBlock id="pb">
+            
+            <!-- Page Message -->
+            <apex:PageMessages />
+            
+            <!-- Page block section to select rule and enter rule name -->  
+            <apex:pageBlockSection title="Rule Definition" collapsible="false" columns="1" id="pbs1">
+                
+                <apex:inputField value="{!ruleAssignment1.Name}"/>
+                <apex:inputField value="{!ruleAssignment1.RevRecRule__c}"/>
+                <apex:inputField value="{!ruleAssignment1.Active__c}"/>
+                <apex:inputField value="{!ruleAssignment1.Details__c}"/>
+                
+            </apex:pageBlockSection>
+             
+            <!-- Page block section to select rule and enter rule name -->
+            <apex:pageBlockSection title="Filter Options" collapsible="false" columns="1" id="pbs2">
+            
+                <!-- Page block table to show filter section  -->
+                <apex:pageBlockTable value="{!ruleAssignmentWrapper}" var="wrap" id="pt1">
+                    
+                    <apex:column >
+                        <apex:SelectList Multiselect="false" size="1" value="{!wrap.ruleAssignmentCriteria.Criteria_Field__c}" id="selList">
+                            <apex:actionSupport event="onchange" action="{!onChangeCriteria}" rerender="pb" status="waitMsg"> 
+                                <apex:param name="rowCount" value="{!wrap.rowNum}"/> 
+                            </apex:actionSupport> 
+                            <apex:selectOptions value="{!wrap.selectCriterias}"/>
+                        </apex:SelectList>
+                    </apex:column>
+                    <apex:column >
+                        <apex:SelectList Multiselect="false" size="1" value="{!wrap.ruleAssignmentCriteria.Operator__c}">
+                            <apex:actionSupport event="onchange" action="{!operatorValueChange}" rerender="pb" status="waitMsg">    
+                            </apex:actionSupport> 
+                            <apex:selectOptions value="{!wrap.selectOperators}"/>
+                        </apex:SelectList>
+                    </apex:column>
+                    <apex:column id="col2">
+                        <apex:inputField html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Opportunity_Name__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Name'  || wrap.ruleAssignmentCriteria.Criteria_Field__c == 'None' }"/>
+                        <apex:inputField html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Product_Family__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Family'}"/>
+                        <apex:inputField html-disabled="true" value="{!wrap.ruleAssignmentCriteria.Product_Name__c}" rendered="{!wrap.ruleAssignmentCriteria.Criteria_Field__c == 'Product Name'}"/>
+                    </apex:column>
+                    
+                    <apex:column >
+                        <input type="button" value="Select Values..." onclick="showPopup('{!JSENCODE(wrap.ruleAssignmentCriteria.Criteria_Field__c)}' , '{!JSENCODE(wrap.ruleAssignmentCriteria.Operator__c)}' , '{!wrap.rowNum}');" />
+                        AND
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            
+            <!-- Button section -->
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Save" action="{!saveRuleAssinment}" reRender="pb2, pb" status="waitMsg"/>
+                <apex:commandButton value="New" action="{!inIt}" reRender="pb2, pb" status="waitMsg"/>  
+                <!--  <apex:commandButton value="Cancel" onclick="window.location('/apex/RevRecConfig');"/> -->
+            </apex:pageBlockButtons>
+            
+        </apex:pageBlock>
+        
+        <!-- Page Block to show the All rule assignments -->
+        <apex:pageBlock id="pb2" title="Viewing Revenue Recognition Rule Assignments" >
+        
+            <apex:pageBlockTable value="{!ruleAssignmentRecordsWrapper}" var="ruleAsg" id="pt2" rendered="{!ruleAssignmentRecordsWrapper.size >0}">
+                <apex:column >
+                    <apex:facet name="header">  
+                        <apex:inputCheckbox onClick="checkAll(this, '{!ruleAssignmentRecordsWrapper.size}');" id="headerCheck" styleClass="one"/>
+                    </apex:facet>
+                    <apex:inputcheckbox value="{!ruleAsg.isSelected}" id="checkbox" onClick="checkUnCheckParent('pb2','pt2','headerCheck');"/> 
+                </apex:column>
+                <apex:column headervalue="Rule Assignment Name">
+                    <a onclick="editRuleAsg('{!ruleAsg.rule.Id}');" target="_blank" style="cursor:pointer;">{!ruleAsg.rule.Name}</a>
+                </apex:column>
+                <apex:column value="{!ruleAsg.rule.Opportunity_Name__c}"/>
+                <apex:column value="{!ruleAsg.rule.Product_Family__c}"/>
+                <apex:column value="{!ruleAsg.rule.Product_Name__c}"/>
+                <apex:column value="{!ruleAsg.rule.Active__c}"/>
+                <apex:column headervalue="RevRecRule">
+                    <a href="/apex/AppRopozSLN__RevRecConfig?editRuleId={!ruleAsg.rule.RevRecRule__c}" target="_self">{!ruleAsg.rule.RevRecRule__r.Name}</a>
+                </apex:column>
+                
+                <apex:column >
+                    <input type="button" value=" Edit " class="btn" onclick="editRuleAsg('{!ruleAsg.rule.Id}');"/>          
+                    <input type="button" value="Delete" class="btn" onclick="deleteRuleAsg('{!ruleAsg.rule.Id}');"/>
+                </apex:column>
+            </apex:pageBlockTable>
+            
+            <apex:outputpanel rendered="{!ruleAssignmentRecordsWrapper.size = 0}">
+                <apex:outputlabel value="No Records to display." ></apex:outputlabel>
+            </apex:outputpanel>
+            
+            <apex:pageBlockButtons location="top"  rendered="{!ruleAssignmentRecordsWrapper.size >0}"> 
+                <apex:commandbutton value="Delete selected" action="{!deleteSelected}" reRender="pb, pb2" status="waitMsg"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    
+        <!--Select list with image -->
+        <div id="blockUIDiv" style="display:none;" class="modal-backdrop">
+        <apex:outputpanel id="splitDiv" layout="block" style="display:none;background-color:#F8F8F8;" styleClass="modalPopUpClass"> 
+             <apex:outputpanel layout="block" style="background-color:#F8F8F8;" id="selectDivData">
+             
+                <span>
+                    <b>Instruction</b> <br/>
+                    1. To Select items , hightlight records in the Available list and click on the "Add to Selection" button to move into the selected list.<br/>
+                    2. To remove items ,hightlight records in the Selected list and click on the "Remove from Selection" button to remove it from the selected list.
+                    <br/>
+                </span>
+                <br/>
+                <apex:pageBlock >
+                    
+                    <apex:pageBlockSection columns="1">
+                        <apex:pageMessage summary="{!infoMsg}" severity="INFO" strength="3" id="msg" rendered="{!infoMsg != ''}"/>
+                        
+                        <apex:outputpanel >
+                            <apex:inputText html-placeholder="Search..." value="{!searchString}"/>
+                            <apex:commandButton value="Search" action="{!searchRecords}" reRender="selectDivData" styleClass="searchBtn" status="waitMsg"/>
+                        </apex:outputpanel>
+                    </apex:pageBlockSection>
+                    
+                    <apex:pageBlockSection columns="2">
+                        <apex:outputpanel >
+                            <apex:outputText >
+                                Choose one or more items below.
+                            </apex:outputText>
+                        </apex:outputpanel>
+                        <apex:outputpanel >
+                            <apex:outputText >
+                                Enter other values, like Acme*, to match all <br/>
+                                records that begin with Acme
+                            </apex:outputText>
+                        </apex:outputpanel>
+                    </apex:pageBlockSection>
+                    
+                    <apex:pageBlockSection columns="2"> 
+                        <apex:pageBlockSection title="Availalable Item" columns="1" collapsible="false"> 
+                            <apex:SelectList Multiselect="true" size="5" value="{!leftOpportunityTypeSelected}" rendered="{!opportunitySelectList.size >0}">
+                                <apex:selectOptions value="{!opportunitySelectList}"/>
+                            </apex:SelectList>
+                            <apex:outputText Value="No any record to display." rendered="{!opportunitySelectList.size = 0}"/>
+                            
+                        </apex:pageBlockSection>
+                        
+                        <apex:pageBlockSection title="Enter Additional Search Values" columns="1" collapsible="false"> 
+                            <apex:inputText value="{!additionalSearchText}"/> 
+                        </apex:pageBlockSection>
+                         <apex:commandButton action="{!OpportunityTypeSelectClick}" reRender="selectDivData" value="Add to Selection"/> 
+                         <apex:commandButton action="{!addAdditionalSearchValues}" reRender="selectDivData" value="Add additional search values" />
+                    </apex:pageBlockSection>
+                     <apex:pageBlockSection columns="2"> 
+                        <apex:pageBlockSection title="Selected Item" columns="1" collapsible="false" > 
+                            <apex:SelectList Multiselect="true" size="5" value="{!rightOpportunityTypeSelected}">
+                                <apex:selectOptions value="{!itemSeletedOppList}"/>
+                            </apex:SelectList>
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection title=" Additional Search Values" columns="1" collapsible="false"> 
+                            <apex:outputText value="{!additionalSearchText}" />
+                        </apex:pageBlockSection>
+                        <apex:commandButton action="{!OpportunityTypeUnSelectClick}" reRender="selectDivData" value="Remove from Selection"/>
+                        <apex:commandButton action="{!OpportunityTypeUnSelectClick}" reRender="selectDivData" value="Remove additional search values"/>
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection collapsible="false" title="Selected Search Values">
+                        <apex:inputTextArea value="{!selectedSearchVal}" style="width:124%;"/>
+                    </apex:pageBlockSection>
+                    
+                    <apex:commandButton value="Save" action="{!saveSelectedRecords}" reRender="pb, pb2" oncomplete="closePopUp();" status="waitMsg"/>
+                    <apex:commandButton value="Cancel" onclick="closePopUp();" reRender="pb, pb2"/>
+                    <apex:commandButton value="Back" onclick="closePopUp();" reRender="pb, pb2"/>
+                </apex:pageBlock>
+                
+            </apex:outputpanel>
+        </apex:outputpanel>
+        </div>
+        <!-- Outpanel to show block UI -->
+         <apex:outputpanel >
+             <apex:actionstatus id="waitMsg">
+                 <apex:facet name="start">
+                     <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height: 100%; background: rgba(0, 0, 0, 0.5); width: 100%;position:fixed;top:0px;">
+                         <div class="waitingHolder" style="height:40px; width: 150px; z-index: 100000;margin:0 auto;position:fixed;left:50%;top:50%; margin:-75px 0 0 -135px;border-radius: 5px;background:#ECECE3;padding:10px;text-align: center;vertical-align: middle;border: 1px solid #97CAFF;-moz-box-shadow: 3px 3px 4px #000;-webkit-box-shadow: 3px 3px 4px #000;box-shadow: 3px 3px 4px #000;">
+                             <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." /> 
+                             <span class="waitingDescription" style="color:black;">
+                                    Please Wait...
+                             </span>
+                         </div>
+                     </div>
+                 </apex:facet>
+             </apex:actionstatus>
+         </apex:outputpanel> 
+    </apex:form>
+</apex:page>
